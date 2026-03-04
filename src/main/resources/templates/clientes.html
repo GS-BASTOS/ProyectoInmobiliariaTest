@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Clientes')}"></head>
+<style>
+  .tabla-clientes { width:100%; border-collapse:collapse; font-size:13px; margin-top:16px; }
+  .tabla-clientes thead tr { border-bottom:2px solid var(--line); }
+  .tabla-clientes th {
+    padding:10px 12px; font-size:11px; font-weight:700; letter-spacing:0.7px;
+    text-transform:uppercase; color:var(--muted); white-space:nowrap; text-align:left;
+  }
+  .tabla-clientes td {
+    padding:10px 12px; vertical-align:top; border-bottom:1px solid var(--line);
+  }
+  .tabla-clientes tbody tr:last-child td { border-bottom:none; }
+  .tabla-clientes tbody tr:hover { background:#fafafa; }
+
+  .row-okupa     { background:#fff5f5 !important; border-left:3px solid #b42318; }
+  .row-comprador { background:#f0faf4 !important; border-left:3px solid #168a53; }
+
+  .tag-potencial {
+    display:inline-flex; align-items:center; gap:4px;
+    background:#fff8e1; border:1px solid #ffc107;
+    border-radius:999px; padding:3px 10px;
+    font-size:11px; font-weight:700; color:#795500;
+  }
+  .tag-interesado {
+    display:inline-flex; align-items:center; gap:4px;
+    background:#e3f2fd; border:1px solid #1565c0;
+    border-radius:999px; padding:3px 10px;
+    font-size:11px; font-weight:700; color:#0d47a1;
+  }
+
+  /* ── Checkboxes de selección ── */
+  .check-label {
+    display:inline-flex; align-items:center; gap:5px;
+    cursor:pointer; font-size:12px; padding:2px 0;
+    color:inherit;
+  }
+  .check-label input[type=checkbox] { accent-color:#0b1f5c; cursor:pointer; }
+
+  /* ── Okupas: deshabilitar visualmente checkboxes ── */
+  tr[data-excluido] .email-item,
+  tr[data-excluido] .phone-item {
+    opacity:0.35; cursor:not-allowed; pointer-events:none;
+  }
+  tr[data-excluido] .check-label {
+    opacity:0.4; cursor:not-allowed;
+  }
+
+  /* ── Toolbar emails ── */
+  .email-toolbar {
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    padding:10px 14px;
+    background:#f0f4ff; border:1px solid #c7d4ff; border-radius:10px;
+    margin-bottom:10px;
+  }
+  .email-counter { font-size:13px; font-weight:700; color:#0b1f5c; }
+
+  /* ── Toolbar teléfonos ── */
+  .phone-toolbar {
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    padding:10px 14px;
+    background:#f0fff4; border:1px solid #b2dfdb; border-radius:10px;
+    margin-bottom:14px;
+  }
+  .phone-counter { font-size:13px; font-weight:700; color:#1b5e20; }
+
+  /* ── Toast ── */
+  #copyToast {
+    position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:#222; color:#fff; font-size:13px; padding:10px 22px;
+    border-radius:999px; opacity:0; pointer-events:none;
+    transition:opacity .22s, transform .22s; z-index:9999;
+  }
+  #copyToast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  .copyable { cursor:pointer; }
+  .copyable:hover { text-decoration:underline dotted; }
+</style>
+<body>
+<nav th:replace="~{fragments :: nav}"></nav>
+
+<div id="copyToast"></div>
+
+<div class="container">
+  <div class="card">
+
+    <!-- CABECERA -->
+    <div style="display:flex; align-items:flex-end; justify-content:space-between;
+                gap:12px; flex-wrap:wrap;">
+      <div>
+        <h2 style="margin-bottom:4px;">Clientes</h2>
+        <div class="small">Todos los clientes registrados, con o sin inmueble asignado.</div>
+      </div>
+      <a class="btn btn-primary" th:href="@{/clientes/nuevo}">+ Nuevo cliente</a>
+    </div>
+
+    <hr style="border:none; border-top:1px solid var(--line); margin:14px 0;"/>
+
+    <!-- FILTROS -->
+    <form th:action="@{/clientes}" method="get"
+          style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-bottom:16px;">
+      <div>
+        <label>Nombre / Empresa</label>
+        <input type="text" name="q" th:value="${q}"
+               placeholder="Nombre, empresa..." style="min-width:200px;"/>
+      </div>
+      <div>
+        <label>Teléfono</label>
+        <input type="text" name="telefono" th:value="${telefono}"
+               placeholder="600123456..." style="min-width:150px;"/>
+      </div>
+      <div>
+        <label>Email</label>
+        <input type="text" name="email" th:value="${email}"
+               placeholder="nombre@mail.com..." style="min-width:180px;"/>
+      </div>
+      <div>
+        <label>Tipo</label>
+        <select name="tipo">
+          <option value=""           th:selected="${tipo == null or tipo == ''}">Todos</option>
+          <option value="potencial"  th:selected="${tipo == 'potencial'}">⭐ Solo potenciales</option>
+          <option value="interesado" th:selected="${tipo == 'interesado'}">📋 Con interacciones</option>
+        </select>
+      </div>
+      <div class="actions" style="margin-top:0;">
+        <button type="submit">Filtrar</button>
+        <a class="btn btn-secondary" th:href="@{/clientes}">Limpiar</a>
+      </div>
+    </form>
+
+    <!-- TOOLBAR EMAILS -->
+    <div class="email-toolbar">
+      <label style="display:inline-flex; align-items:center; gap:6px;
+                    cursor:pointer; font-size:13px; margin:0;">
+        <input type="checkbox" id="selectAllEmails" style="accent-color:#0b1f5c;"/>
+        <span id="selectAllEmailText">Seleccionar todos los emails</span>
+      </label>
+      <span class="email-counter">
+        📧 <span id="emailsCount">0</span> seleccionados
+      </span>
+      <button type="button" id="copyEmailsBtn" disabled
+              style="padding:5px 14px; font-size:12px;">
+        Copiar emails
+      </button>
+      <button type="button" id="clearEmailsBtn"
+              style="display:none; padding:5px 14px; font-size:12px;
+                     background:#fff; color:#888; border:1px solid #ddd;">
+        Limpiar
+      </button>
+    </div>
+
+    <!-- TOOLBAR TELÉFONOS -->
+    <div class="phone-toolbar">
+      <label style="display:inline-flex; align-items:center; gap:6px;
+                    cursor:pointer; font-size:13px; margin:0;">
+        <input type="checkbox" id="selectAllPhones" style="accent-color:#168a53;"/>
+        <span id="selectAllPhoneText">Seleccionar todos los teléfonos</span>
+      </label>
+      <span class="phone-counter">
+        📱 <span id="phonesCount">0</span> seleccionados
+      </span>
+      <button type="button" id="copyPhonesBtn" disabled
+              style="padding:5px 14px; font-size:12px;
+                     background:#168a53; border-color:#168a53;">
+        Copiar teléfonos
+      </button>
+      <button type="button" id="clearPhonesBtn"
+              style="display:none; padding:5px 14px; font-size:12px;
+                     background:#fff; color:#888; border:1px solid #ddd;">
+        Limpiar
+      </button>
+    </div>
+
+    <!-- SIN RESULTADOS -->
+    <p th:if="${#lists.isEmpty(clients)}"
+       style="color:var(--muted); font-size:13px; margin:0; padding:20px 0; text-align:center;">
+      No hay clientes con esos filtros.
+    </p>
+
+    <!-- TABLA -->
+    <table class="tabla-clientes" th:if="${!#lists.isEmpty(clients)}">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Teléfonos</th>
+          <th>Emails</th>
+          <th>Tipo</th>
+          <th style="min-width:180px;">¿Qué busca?</th>
+          <th style="text-align:center;">Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="c : ${clients}"
+            th:classappend="${c.posibleOcupa ? 'row-okupa' :
+                              c.compradorFinal ? 'row-comprador' : ''}"
+            th:attr="data-excluido=${c.posibleOcupa ? 'true' : null}">
+
+          <!-- NOMBRE -->
+          <td>
+            <a th:href="@{|/clientes/${c.id}|}"
+               th:text="${c.fullName}"
+               th:style="${c.posibleOcupa   ? 'font-weight:700; color:#b42318;' :
+                           c.compradorFinal ? 'font-weight:700; color:#168a53;' :
+                                              'font-weight:600; color:inherit;'}">
+              Cliente
+            </a>
+            <div th:if="${c.companyName != null and !#strings.isEmpty(c.companyName)}"
+                 style="font-size:11px; color:#888; margin-top:2px;"
+                 th:text="${c.companyName}"></div>
+            <div style="margin-top:5px; display:flex; gap:4px; flex-wrap:wrap;">
+              <span th:if="${c.posibleOcupa}"
+                    style="display:inline-flex; align-items:center; gap:4px;
+                           background:#ffebee; border:1px solid #b42318;
+                           border-radius:999px; padding:2px 8px;
+                           font-size:11px; color:#b42318; font-weight:800;">
+                ⚠ OKUPA
+              </span>
+              <span th:if="${c.compradorFinal}"
+                    style="display:inline-flex; align-items:center; gap:4px;
+                           background:#e8f5e9; border:1px solid #168a53;
+                           border-radius:999px; padding:2px 8px;
+                           font-size:11px; color:#168a53; font-weight:800;">
+                💰 COMPRADOR
+              </span>
+            </div>
+          </td>
+
+          <!-- TELÉFONOS -->
+          <td>
+            <span th:if="${phonesByClientId.get(c.id) == null or
+                           #lists.isEmpty(phonesByClientId.get(c.id))}"
+                  style="color:#ccc;">—</span>
+            <label th:each="p : ${phonesByClientId.get(c.id)}"
+                   class="check-label" style="display:flex;">
+              <input type="checkbox"
+                     class="phone-item"
+                     th:attr="data-phone=${p.phoneNumber}"
+                     th:value="${p.phoneNumber}"/>
+              <span class="copyable"
+                    th:attr="data-copy=${p.phoneNumber}"
+                    th:text="${p.phoneNumber}"></span>
+            </label>
+          </td>
+
+          <!-- EMAILS -->
+          <td>
+            <span th:if="${emailsByClientId.get(c.id) == null or
+                           #lists.isEmpty(emailsByClientId.get(c.id))}"
+                  style="color:#ccc;">—</span>
+            <label th:each="e : ${emailsByClientId.get(c.id)}"
+                   class="check-label" style="display:flex;">
+              <input type="checkbox"
+                     class="email-item"
+                     th:attr="data-email=${e.email}"
+                     th:value="${e.email}"/>
+              <span class="copyable"
+                    th:attr="data-copy=${e.email}"
+                    th:text="${e.email}"></span>
+            </label>
+          </td>
+
+          <!-- TIPO -->
+          <td>
+            <span style="font-size:12px; color:var(--muted);"
+                  th:text="${c.clientType}">PARTICULAR</span>
+          </td>
+
+          <!-- QUÉ BUSCA -->
+          <td style="max-width:200px; font-size:12px; color:#555;">
+            <span th:if="${c.motivoContacto != null and !#strings.isEmpty(c.motivoContacto)}"
+                  th:text="${c.motivoContacto}"></span>
+            <span th:if="${c.motivoContacto == null or #strings.isEmpty(c.motivoContacto)}"
+                  style="color:#ccc;">—</span>
+          </td>
+
+          <!-- ESTADO -->
+          <td style="text-align:center;">
+            <span th:with="cnt=${interactionCount.get(c.id) != null ? interactionCount.get(c.id) : 0}">
+              <span th:if="${cnt == 0}" class="tag-potencial">⭐ Potencial</span>
+              <span th:if="${cnt > 0}"  class="tag-interesado"
+                    th:text="${cnt + (cnt == 1 ? ' interacción' : ' interacciones')}">
+                1 interacción
+              </span>
+            </span>
+          </td>
+
+          <!-- ACCIÓN -->
+          <td style="white-space:nowrap;">
+            <a class="btn btn-secondary" th:href="@{|/clientes/${c.id}|}"
+               style="font-size:12px; padding:6px 12px;">Ver ficha</a>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>
+
+<script>
+(function () {
+
+  /* ── Toast ── */
+  const toast = document.getElementById('copyToast');
+  let toastTimer;
+  function showToast(msg) {
+    toast.textContent = msg + ' ✓';
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+
+  /* ── Copiar al click en .copyable ── */
+  document.addEventListener('click', async function (e) {
+    const el = e.target.closest('.copyable');
+    if (!el) return;
+    if (e.target.tagName === 'INPUT') return;
+    const text = el.getAttribute('data-copy') || el.textContent.trim();
+    try { await navigator.clipboard.writeText(text); }
+    catch (_) {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.cssText = 'position:fixed;left:-9999px';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+    }
+    showToast('Copiado: ' + text);
+  });
+
+  /* ════════════════════════════
+     EMAILS
+  ════════════════════════════ */
+  const selectAllEmailsCb  = document.getElementById('selectAllEmails');
+  const selectAllEmailText = document.getElementById('selectAllEmailText');
+  const emailsCount        = document.getElementById('emailsCount');
+  const copyEmailsBtn      = document.getElementById('copyEmailsBtn');
+  const clearEmailsBtn     = document.getElementById('clearEmailsBtn');
+
+  function getEmailItems()          { return Array.from(document.querySelectorAll('.email-item')); }
+  function getSelectableEmailItems(){ return getEmailItems().filter(cb => cb.closest('tr[data-excluido]') === null); }
+  function getSelectedEmails() {
+    const set = new Set();
+    getEmailItems().filter(cb => cb.checked).forEach(cb => {
+      const v = (cb.getAttribute('data-email') || '').trim().toLowerCase();
+      if (v) set.add(v);
+    });
+    return Array.from(set).sort();
+  }
+  function syncSelectAllEmails() {
+    const all     = getSelectableEmailItems();
+    const checked = getEmailItems().filter(cb => cb.checked);
+    if (!all.length || !checked.length) {
+      selectAllEmailsCb.checked = false; selectAllEmailsCb.indeterminate = false;
+      selectAllEmailText.textContent = 'Seleccionar todos los emails';
+    } else if (checked.length === all.length) {
+      selectAllEmailsCb.checked = true; selectAllEmailsCb.indeterminate = false;
+      selectAllEmailText.textContent = 'Deseleccionar todos';
+    } else {
+      selectAllEmailsCb.checked = false; selectAllEmailsCb.indeterminate = true;
+      selectAllEmailText.textContent = `Seleccionar todos (${checked.length}/${all.length})`;
+    }
+  }
+  function renderEmails() {
+    const list = getSelectedEmails();
+    emailsCount.textContent      = String(list.length);
+    copyEmailsBtn.disabled       = list.length === 0;
+    clearEmailsBtn.style.display = list.length === 0 ? 'none' : 'inline-flex';
+    syncSelectAllEmails();
+    return list;
+  }
+  function clearEmailSelection() { getEmailItems().forEach(cb => cb.checked = false); renderEmails(); }
+
+  selectAllEmailsCb.addEventListener('change', () => {
+    getSelectableEmailItems().forEach(cb => cb.checked = selectAllEmailsCb.checked);
+    renderEmails();
+  });
+  document.addEventListener('change', ev => {
+    if (ev.target?.classList.contains('email-item')) renderEmails();
+  });
+  copyEmailsBtn.addEventListener('click', async () => {
+    const list = renderEmails();
+    if (!list.length) return;
+    const text = list.join('; ');
+    try { await navigator.clipboard.writeText(text); }
+    catch (_) {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;left:-9999px';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+    }
+    showToast(list.length + ' email(s) copiados');
+    clearEmailSelection();
+  });
+  clearEmailsBtn.addEventListener('click', clearEmailSelection);
+  renderEmails();
+
+  /* ════════════════════════════
+     TELÉFONOS
+  ════════════════════════════ */
+  const selectAllPhonesCb  = document.getElementById('selectAllPhones');
+  const selectAllPhoneText = document.getElementById('selectAllPhoneText');
+  const phonesCount        = document.getElementById('phonesCount');
+  const copyPhonesBtn      = document.getElementById('copyPhonesBtn');
+  const clearPhonesBtn     = document.getElementById('clearPhonesBtn');
+
+  function getPhoneItems()          { return Array.from(document.querySelectorAll('.phone-item')); }
+  function getSelectablePhoneItems(){ return getPhoneItems().filter(cb => cb.closest('tr[data-excluido]') === null); }
+  function getSelectedPhones() {
+    const set = new Set();
+    getPhoneItems().filter(cb => cb.checked).forEach(cb => {
+      const v = (cb.getAttribute('data-phone') || '').trim();
+      if (v) set.add(v);
+    });
+    return Array.from(set);
+  }
+  function syncSelectAllPhones() {
+    const all     = getSelectablePhoneItems();
+    const checked = getPhoneItems().filter(cb => cb.checked);
+    if (!all.length || !checked.length) {
+      selectAllPhonesCb.checked = false; selectAllPhonesCb.indeterminate = false;
+      selectAllPhoneText.textContent = 'Seleccionar todos los teléfonos';
+    } else if (checked.length === all.length) {
+      selectAllPhonesCb.checked = true; selectAllPhonesCb.indeterminate = false;
+      selectAllPhoneText.textContent = 'Deseleccionar todos';
+    } else {
+      selectAllPhonesCb.checked = false; selectAllPhonesCb.indeterminate = true;
+      selectAllPhoneText.textContent = `Seleccionar todos (${checked.length}/${all.length})`;
+    }
+  }
+  function renderPhones() {
+    const list = getSelectedPhones();
+    phonesCount.textContent      = String(list.length);
+    copyPhonesBtn.disabled       = list.length === 0;
+    clearPhonesBtn.style.display = list.length === 0 ? 'none' : 'inline-flex';
+    syncSelectAllPhones();
+    return list;
+  }
+  function clearPhoneSelection() { getPhoneItems().forEach(cb => cb.checked = false); renderPhones(); }
+
+  selectAllPhonesCb.addEventListener('change', () => {
+    getSelectablePhoneItems().forEach(cb => cb.checked = selectAllPhonesCb.checked);
+    renderPhones();
+  });
+  document.addEventListener('change', ev => {
+    if (ev.target?.classList.contains('phone-item')) renderPhones();
+  });
+  copyPhonesBtn.addEventListener('click', async () => {
+    const list = renderPhones();
+    if (!list.length) return;
+    const text = list.join(', ');
+    try { await navigator.clipboard.writeText(text); }
+    catch (_) {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;left:-9999px';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+    }
+    showToast(list.length + ' teléfono(s) copiados');
+    clearPhoneSelection();
+  });
+  clearPhonesBtn.addEventListener('click', clearPhoneSelection);
+  renderPhones();
+
+})();
+</script>
+
+</body>
+</html>

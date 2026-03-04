@@ -9,15 +9,15 @@
 
 <body>
 <nav th:fragment="nav" class="nav">
-  <a class="brand" th:href="@{/}">Solvia Base de Datos</a>
+  <a class="brand" th:href="@{/}">Solvia Store</a>
   <a th:href="@{/dashboard}">Panel Usuario</a>
+  <a th:href="@{/clientes}">Clientes</a>
   <a th:href="@{/interesados}">Interesados</a>
   <a th:href="@{/agregar}">Agregar</a>
   <a th:href="@{/inmuebles}">Inmuebles</a>
   <a th:href="@{/visitas/programadas}">Visitas programadas</a>
   <a th:href="@{/visitas/realizadas}">Visitas realizadas</a>
 
-  <!-- Logout empujado a la derecha -->
   <form method="post" th:action="@{/logout}" style="margin-left:auto;">
     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
     <button type="submit"
@@ -27,7 +27,6 @@
       Cerrar sesión
     </button>
   </form>
-
 </nav>
 
 </body>

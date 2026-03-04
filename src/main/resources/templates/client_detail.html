@@ -105,9 +105,7 @@
     min-height: 28px;
     display: block;
   }
-  .comment-display-cell:hover {
-    background: #f5f5f5;
-  }
+  .comment-display-cell:hover { background: #f5f5f5; }
   .comment-display-cell mark {
     background: #ffcccc;
     color: #b42318;
@@ -127,8 +125,6 @@
   }
 </style>
 <body>
-
-<!-- ── CSRF meta tags ── -->
 <meta name="_csrf"        th:content="${_csrf.token}"/>
 <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
@@ -169,7 +165,7 @@
 
 <div class="container">
 
-  <!-- PERFIL -->
+  <!-- ══ PERFIL ══ -->
   <div class="card"
        th:style="${client.posibleOcupa
                    ? 'border-left:6px solid #b42318;'
@@ -208,6 +204,7 @@
       </span>
     </div>
 
+    <!-- Nota okupa -->
     <div th:if="${client.posibleOcupa
                   and client.generalNotes != null
                   and !#strings.isEmpty(client.generalNotes)}"
@@ -217,6 +214,16 @@
       <strong>Nota:</strong> <span th:text="${client.generalNotes}"></span>
     </div>
 
+    <!-- ── NUEVO: Motivo de contacto ── -->
+    <div th:if="${motivoContacto != null and !#strings.isEmpty(motivoContacto)}"
+         style="margin-top:8px; padding:10px 14px;
+                background:#fff8e1; border-left:4px solid #ffc107;
+                border-radius:6px; font-size:13px; color:#555;">
+      <strong style="color:#795500;">⭐ ¿Qué busca?</strong>
+      <span th:text="${motivoContacto}" style="margin-left:6px;"></span>
+    </div>
+
+    <!-- Nota comprador -->
     <div th:if="${client.compradorFinal}"
          style="margin-top:8px; padding:8px 12px; background:#e8f5e9;
                 border-left:4px solid #168a53; border-radius:6px;
@@ -270,7 +277,7 @@
     </div>
   </div>
 
-  <!-- INTERACCIONES -->
+  <!-- ══ INTERACCIONES ══ -->
   <div class="card" style="margin-top:24px; border-top:3px solid var(--text);">
     <h2>Interacciones</h2>
     <div class="small">Histórico de contacto del cliente</div>
@@ -278,137 +285,137 @@
 
     <table>
       <thead>
-      <tr>
-        <th>Fecha</th>
-        <th>Inmueble</th>
-        <th>NDA</th>
-        <th>Ticket</th>
-        <th>Canal</th>
-        <th>Estado</th>
-        <th style="min-width:220px;">Comentarios</th>
-      </tr>
+        <tr>
+          <th>Fecha</th>
+          <th>Inmueble</th>
+          <th>NDA</th>
+          <th>Ticket</th>
+          <th>Canal</th>
+          <th>Estado</th>
+          <th style="min-width:220px;">Comentarios</th>
+        </tr>
       </thead>
       <tbody>
-      <tr th:if="${#lists.isEmpty(interactions)}">
-        <td colspan="7" class="small">Aún no hay interacciones registradas.</td>
-      </tr>
-      <tr th:each="it : ${interactions}"
-          th:style="${client.compradorFinal and it.property.sold
-                      ? 'background:#e8f5e9; border-left:3px solid #168a53;'
-                      : client.compradorFinal
-                        ? 'opacity:0.35; pointer-events:none;'
-                        : client.posibleOcupa
-                          ? 'background:#fff8f8;'
-                          : ''}">
-        <td th:text="${#temporals.format(it.contactDate, 'dd/MM/yyyy')}">13/02/2026</td>
+        <tr th:if="${#lists.isEmpty(interactions)}">
+          <td colspan="7" class="small">Aún no hay interacciones registradas.</td>
+        </tr>
+        <tr th:each="it : ${interactions}"
+            th:style="${client.compradorFinal and it.property.sold
+                        ? 'background:#e8f5e9; border-left:3px solid #168a53;'
+                        : client.compradorFinal
+                          ? 'opacity:0.35; pointer-events:none;'
+                          : client.posibleOcupa
+                            ? 'background:#fff8f8;'
+                            : ''}">
 
-        <!-- INMUEBLE -->
-        <td>
-          <div><strong th:text="${it.property.propertyCode}">-</strong></div>
-          <div class="small"
-               th:if="${it.property.propertyType != null and !#strings.isEmpty(it.property.propertyType)}"
-               th:text="${it.property.propertyType}">Tipo</div>
-          <div class="small"
-               th:if="${it.property.address != null and !#strings.isEmpty(it.property.address)}"
-               th:text="${it.property.address}">Dirección</div>
-          <div class="small"
-               th:if="${it.property.municipality != null and !#strings.isEmpty(it.property.municipality)}"
-               th:text="${it.property.municipality}">Municipio</div>
+          <td th:text="${#temporals.format(it.contactDate, 'dd/MM/yyyy')}">13/02/2026</td>
 
-          <a th:if="${it.property.sold}"
-             th:href="${it.property.soldClient != null
-                        ? '/clientes/' + it.property.soldClient.id
-                        : '/clientes/' + it.client.id}"
-             style="margin-top:4px; display:inline-flex; align-items:center; gap:4px;
-                    background:#e8f5e9; border:1px solid #168a53; border-radius:999px;
-                    padding:2px 8px; font-size:11px; color:#168a53; font-weight:700;
-                    text-decoration:none; transition:box-shadow .15s; white-space:nowrap;"
-             onmouseover="this.style.boxShadow='0 0 0 3px rgba(22,138,83,.2)'"
-             onmouseout="this.style.boxShadow='none'">
-            💰 Comprado
-            <span th:if="${it.property.soldClient != null}"
-                  th:text="${' · ' + it.property.soldClient.fullName}"></span>
-          </a>
+          <!-- INMUEBLE -->
+          <td>
+            <div><strong th:text="${it.property.propertyCode}">-</strong></div>
+            <div class="small"
+                 th:if="${it.property.propertyType != null and !#strings.isEmpty(it.property.propertyType)}"
+                 th:text="${it.property.propertyType}">Tipo</div>
+            <div class="small"
+                 th:if="${it.property.address != null and !#strings.isEmpty(it.property.address)}"
+                 th:text="${it.property.address}">Dirección</div>
+            <div class="small"
+                 th:if="${it.property.municipality != null and !#strings.isEmpty(it.property.municipality)}"
+                 th:text="${it.property.municipality}">Municipio</div>
 
-          <a th:if="${!it.property.sold and it.property.preVendido}"
-             th:href="${it.property.preVendidoClient != null
-                        ? '/clientes/' + it.property.preVendidoClient.id
-                        : '#'}"
-             style="margin-top:4px; display:inline-flex; align-items:center; gap:4px;
-                    background:#fff4e6; border:1px solid #e07a18; border-radius:999px;
-                    padding:2px 8px; font-size:11px; color:#a05800; font-weight:700;
-                    text-decoration:none; transition:box-shadow .15s; white-space:nowrap;"
-             onmouseover="this.style.boxShadow='0 0 0 3px rgba(224,122,24,.2)'"
-             onmouseout="this.style.boxShadow='none'">
-            ⏳ Pre vendido
-            <span th:if="${it.property.preVendidoClient != null}"
-                  th:text="${' · ' + it.property.preVendidoClient.fullName}"></span>
-          </a>
-        </td>
+            <a th:if="${it.property.sold}"
+               th:href="${it.property.soldClient != null
+                          ? '/clientes/' + it.property.soldClient.id
+                          : '/clientes/' + it.client.id}"
+               style="margin-top:4px; display:inline-flex; align-items:center; gap:4px;
+                      background:#e8f5e9; border:1px solid #168a53; border-radius:999px;
+                      padding:2px 8px; font-size:11px; color:#168a53; font-weight:700;
+                      text-decoration:none; transition:box-shadow .15s; white-space:nowrap;"
+               onmouseover="this.style.boxShadow='0 0 0 3px rgba(22,138,83,.2)'"
+               onmouseout="this.style.boxShadow='none'">
+              💰 Comprado
+              <span th:if="${it.property.soldClient != null}"
+                    th:text="${' · ' + it.property.soldClient.fullName}"></span>
+            </a>
 
-        <!-- NDA -->
-        <td style="text-align:center;">
-          <input type="checkbox" class="nda-toggle"
-                 th:attr="data-client-id=${client.id},data-interaction-id=${it.id}"
-                 th:checked="${it.ndaRequested}" />
-        </td>
+            <a th:if="${!it.property.sold and it.property.preVendido}"
+               th:href="${it.property.preVendidoClient != null
+                          ? '/clientes/' + it.property.preVendidoClient.id
+                          : '#'}"
+               style="margin-top:4px; display:inline-flex; align-items:center; gap:4px;
+                      background:#fff4e6; border:1px solid #e07a18; border-radius:999px;
+                      padding:2px 8px; font-size:11px; color:#a05800; font-weight:700;
+                      text-decoration:none; transition:box-shadow .15s; white-space:nowrap;"
+               onmouseover="this.style.boxShadow='0 0 0 3px rgba(224,122,24,.2)'"
+               onmouseout="this.style.boxShadow='none'">
+              ⏳ Pre vendido
+              <span th:if="${it.property.preVendidoClient != null}"
+                    th:text="${' · ' + it.property.preVendidoClient.fullName}"></span>
+            </a>
+          </td>
 
-        <!-- TICKET -->
-        <td style="min-width:130px;">
-          <input type="text" class="ticket-input"
-                 th:attr="data-client-id=${client.id},data-interaction-id=${it.id}"
-                 th:value="${it.ticketCode}"
-                 placeholder="Código ticket..."
-                 style="width:100%; font-size:12px; padding:5px 8px;"/>
-          <div style="display:flex; gap:6px; margin-top:4px; align-items:center;">
-            <button type="button" class="ticket-save"
-                    th:attr="data-client-id=${client.id},data-interaction-id=${it.id}"
-                    style="padding:3px 8px; font-size:11px;">Guardar</button>
-            <span class="ticket-feedback small"
-                  style="display:none; color:#4caf50;">✓</span>
-          </div>
-        </td>
+          <!-- NDA -->
+          <td style="text-align:center;">
+            <input type="checkbox" class="nda-toggle"
+                   th:attr="data-client-id=${client.id},data-interaction-id=${it.id}"
+                   th:checked="${it.ndaRequested}"/>
+          </td>
 
-        <!-- CANAL -->
-        <td th:text="${it.channel}">-</td>
+          <!-- TICKET -->
+          <td style="min-width:130px;">
+            <input type="text" class="ticket-input"
+                   th:attr="data-client-id=${client.id},data-interaction-id=${it.id}"
+                   th:value="${it.ticketCode}"
+                   placeholder="Código ticket..."
+                   style="width:100%; font-size:12px; padding:5px 8px;"/>
+            <div style="display:flex; gap:6px; margin-top:4px; align-items:center;">
+              <button type="button" class="ticket-save"
+                      th:attr="data-client-id=${client.id},data-interaction-id=${it.id}"
+                      style="padding:3px 8px; font-size:11px;">Guardar</button>
+              <span class="ticket-feedback small"
+                    style="display:none; color:#4caf50;">✓</span>
+            </div>
+          </td>
 
-        <!-- ESTADO -->
-        <td>
-          <select class="status-select"
-                  th:attr="data-client-id=${client.id},data-interaction-id=${it.id}">
-            <option th:each="s : ${statuses}"
-                    th:value="${s}" th:text="${s}"
-                    th:selected="${s == it.status}"></option>
-          </select>
-          <span class="badge" style="margin-left:8px;">
-            <span class="dot status-dot" th:attr="data-status=${it.status}"></span>
-          </span>
-        </td>
+          <!-- CANAL -->
+          <td th:text="${it.channel}">-</td>
 
-        <!-- COMENTARIOS ── ▼ NUEVO: modal editor en lugar de textarea ▼ -->
-        <td style="min-width:220px; vertical-align:top;">
-          <span th:if="${it.comments == null or #strings.isEmpty(it.comments)}"
-                class="comment-display-cell"
-                th:attr="data-iid=${it.id}, data-cid=${client.id}"
-                style="color:#ccc; font-size:12px;"
-                onclick="openCommentModal(this)">
-            — <span style="font-size:10px;">(editar)</span>
-          </span>
-          <span th:if="${it.comments != null and !#strings.isEmpty(it.comments)}"
-                class="comment-display-cell"
-                th:attr="data-iid=${it.id}, data-cid=${client.id}"
-                th:utext="${it.comments}"
-                style="font-size:13px; color:#333;"
-                onclick="openCommentModal(this)">
-          </span>
-          <div style="margin-top:4px;">
-            <span class="comments-feedback small"
-                  style="display:none; color:#4caf50;">✓ Guardado</span>
-          </div>
-        </td>
-        <!-- ▲ FIN COMENTARIOS ▲ -->
+          <!-- ESTADO -->
+          <td>
+            <select class="status-select"
+                    th:attr="data-client-id=${client.id},data-interaction-id=${it.id}">
+              <option th:each="s : ${statuses}"
+                      th:value="${s}" th:text="${s}"
+                      th:selected="${s == it.status}"></option>
+            </select>
+            <span class="badge" style="margin-left:8px;">
+              <span class="dot status-dot" th:attr="data-status=${it.status}"></span>
+            </span>
+          </td>
 
-      </tr>
+          <!-- COMENTARIOS -->
+          <td style="min-width:220px; vertical-align:top;">
+            <span th:if="${it.comments == null or #strings.isEmpty(it.comments)}"
+                  class="comment-display-cell"
+                  th:attr="data-iid=${it.id}, data-cid=${client.id}"
+                  style="color:#ccc; font-size:12px;"
+                  onclick="openCommentModal(this)">
+              — <span style="font-size:10px;">(editar)</span>
+            </span>
+            <span th:if="${it.comments != null and !#strings.isEmpty(it.comments)}"
+                  class="comment-display-cell"
+                  th:attr="data-iid=${it.id}, data-cid=${client.id}"
+                  th:utext="${it.comments}"
+                  style="font-size:13px; color:#333;"
+                  onclick="openCommentModal(this)">
+            </span>
+            <div style="margin-top:4px;">
+              <span class="comments-feedback small"
+                    style="display:none; color:#4caf50;">✓ Guardado</span>
+            </div>
+          </td>
+
+        </tr>
       </tbody>
     </table>
 
@@ -420,7 +427,7 @@
     </div>
   </div>
 
-  <!-- NUEVA INTERACCIÓN -->
+  <!-- ══ NUEVA INTERACCIÓN ══ -->
   <div class="card" style="margin-top:24px;"
        th:style="${client.compradorFinal ? 'opacity:0.4; pointer-events:none;' : ''}">
     <h2>Nueva interacción</h2>
@@ -433,20 +440,22 @@
     <form th:action="@{|/clientes/${client.id}/interacciones|}"
           th:object="${newInteraction}" method="post">
       <div class="grid-3">
-        <div><label>Fecha</label><input type="date" th:field="*{contactDate}" /></div>
-        <div><label>Canal</label>
+        <div><label>Fecha</label><input type="date" th:field="*{contactDate}"/></div>
+        <div>
+          <label>Canal</label>
           <select th:field="*{channel}">
             <option th:each="c : ${channels}" th:value="${c}" th:text="${c}"></option>
           </select>
         </div>
-        <div><label>Estado</label>
+        <div>
+          <label>Estado</label>
           <select th:field="*{status}">
             <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>
           </select>
         </div>
       </div>
 
-      <!-- ══ COMBOBOX INMUEBLE ══ -->
+      <!-- COMBOBOX INMUEBLE -->
       <div style="margin-top:14px;">
         <label style="font-weight:600;">Seleccionar inmueble del catálogo</label>
         <div class="small" style="margin-bottom:6px; color:#888;">
@@ -509,45 +518,59 @@
           <input th:field="*{address}" id="niAddress" placeholder="Ej: Calle ..."/>
         </div>
       </div>
-
       <div><label>Comentarios</label><textarea th:field="*{comments}"></textarea></div>
       <button type="submit">Guardar interacción</button>
     </form>
   </div>
 
-  <!-- EDITAR CLIENTE -->
+  <!-- ══ EDITAR CLIENTE ══ -->
   <div class="card" id="editar" style="margin-top:24px;">
     <h2>Editar cliente</h2>
     <div class="small">Modificar datos del cliente</div>
     <hr style="border:none;border-top:1px solid var(--line); margin:12px 0;"/>
 
     <form th:action="@{|/clientes/${client.id}/editar|}" th:object="${form}" method="post">
-      <input type="hidden" th:field="*{id}" />
+      <input type="hidden" th:field="*{id}"/>
       <div class="grid">
-        <div><label>Tipo</label>
+        <div>
+          <label>Tipo</label>
           <select th:field="*{clientType}">
             <option th:each="t : ${clientTypes}" th:value="${t}" th:text="${t}"></option>
           </select>
         </div>
-        <div><label>Nombre</label><input th:field="*{fullName}" /></div>
+        <div><label>Nombre</label><input th:field="*{fullName}"/></div>
       </div>
       <div class="grid">
-        <div><label>Empresa (opcional)</label><input th:field="*{companyName}" placeholder="Nombre de la empresa..." /></div>
-        <div><label>Código Solvia</label><input th:field="*{solviaCode}" placeholder="Ej: SOLVIA-123" /></div>
+        <div><label>Empresa (opcional)</label><input th:field="*{companyName}" placeholder="Nombre de la empresa..."/></div>
+        <div><label>Código Solvia</label><input th:field="*{solviaCode}" placeholder="Ej: SOLVIA-123"/></div>
       </div>
       <div class="grid-3">
-        <div><label>Teléfono 1</label><input th:field="*{phone1}" />
-          <div class="field-error" th:if="${#fields.hasErrors('phone1')}" th:errors="*{phone1}"></div></div>
-        <div><label>Teléfono 2</label><input th:field="*{phone2}" />
-          <div class="field-error" th:if="${#fields.hasErrors('phone2')}" th:errors="*{phone2}"></div></div>
-        <div><label>Teléfono 3</label><input th:field="*{phone3}" />
-          <div class="field-error" th:if="${#fields.hasErrors('phone3')}" th:errors="*{phone3}"></div></div>
+        <div>
+          <label>Teléfono 1</label><input th:field="*{phone1}"/>
+          <div class="field-error" th:if="${#fields.hasErrors('phone1')}" th:errors="*{phone1}"></div>
+        </div>
+        <div>
+          <label>Teléfono 2</label><input th:field="*{phone2}"/>
+          <div class="field-error" th:if="${#fields.hasErrors('phone2')}" th:errors="*{phone2}"></div>
+        </div>
+        <div>
+          <label>Teléfono 3</label><input th:field="*{phone3}"/>
+          <div class="field-error" th:if="${#fields.hasErrors('phone3')}" th:errors="*{phone3}"></div>
+        </div>
       </div>
       <div class="grid">
-        <div><label>Email 1</label><input th:field="*{email1}" /></div>
-        <div><label>Email 2</label><input th:field="*{email2}" /></div>
+        <div><label>Email 1</label><input th:field="*{email1}"/></div>
+        <div><label>Email 2</label><input th:field="*{email2}"/></div>
       </div>
       <div><label>Notas generales</label><textarea th:field="*{generalNotes}"></textarea></div>
+
+      <!-- ── NUEVO: Motivo de contacto ── -->
+      <div style="margin-top:12px;">
+        <label>¿Qué busca? / Motivo de contacto</label>
+        <textarea th:field="*{motivoContacto}"
+                  rows="3"
+                  placeholder="Ej: Busca piso de 3 habitaciones en Madrid, presupuesto 200k..."></textarea>
+      </div>
 
       <!-- CHECKBOXES ESPECIALES -->
       <div style="margin-top:14px; padding:14px; border:1px solid var(--line);
@@ -674,7 +697,6 @@
             Si el inmueble ya está marcado como vendido no cambiará nada.
           </div>
         </div>
-
       </div>
 
       <button type="submit" style="margin-top:16px;">Guardar</button>
@@ -693,7 +715,7 @@
 <script>
 (function () {
 
-  /* ── CSRF ────────────────────────────────────── */
+  /* ── CSRF ── */
   const csrfToken  = document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || '';
   const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
 
@@ -727,8 +749,8 @@
   }
 
   function renderDropdown(q) {
-    dropdown.innerHTML  = '';
-    currentHighlight    = -1;
+    dropdown.innerHTML = '';
+    currentHighlight   = -1;
     const lq = (q || '').trim().toLowerCase();
     visibleOptions = lq === ''
       ? allItems
@@ -738,7 +760,6 @@
           item.municipality.toLowerCase().includes(lq) ||
           item.address.toLowerCase().includes(lq)
         );
-
     if (visibleOptions.length === 0) {
       dropdown.innerHTML = '<div class="combo-empty">Sin resultados</div>';
       return;
@@ -782,10 +803,10 @@
     comboInput.value    = '';
     comboInput.readOnly = false;
     chip.style.display  = 'none';
-    document.getElementById('niPropertyCode').value  = '';
-    document.getElementById('niPropertyType').value  = '';
-    document.getElementById('niAddress').value       = '';
-    document.getElementById('niMunicipality').value  = '';
+    document.getElementById('niPropertyCode').value = '';
+    document.getElementById('niPropertyType').value = '';
+    document.getElementById('niAddress').value      = '';
+    document.getElementById('niMunicipality').value = '';
   }
 
   function openDropdown(q) { renderDropdown(q); dropdown.classList.add('open'); }
@@ -801,12 +822,8 @@
     }
   }
 
-  comboInput.addEventListener('click', function () {
-    comboInput.readOnly = false;
-    comboInput.value    = '';
-    openDropdown('');
-  });
-  comboInput.addEventListener('input', function () { openDropdown(comboInput.value); });
+  comboInput.addEventListener('click',  function () { comboInput.readOnly = false; comboInput.value = ''; openDropdown(''); });
+  comboInput.addEventListener('input',  function () { openDropdown(comboInput.value); });
   comboInput.addEventListener('keydown', function (e) {
     const opts = dropdown.querySelectorAll('.combo-option');
     if      (e.key === 'ArrowDown') { e.preventDefault(); setHighlight(Math.min(currentHighlight + 1, opts.length - 1)); }
@@ -848,10 +865,7 @@
       try {
         const res = await fetch(`/clientes/${clientId}/interacciones/${interactionId}/nda`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            [csrfHeader]: csrfToken
-          },
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded', [csrfHeader]: csrfToken },
           body: 'ndaRequested=' + encodeURIComponent(String(checked))
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -873,17 +887,11 @@
       try {
         const res = await fetch(`/clientes/${clientId}/interacciones/${interactionId}/ticket`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            [csrfHeader]: csrfToken
-          },
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded', [csrfHeader]: csrfToken },
           body: 'ticketCode=' + encodeURIComponent(input.value)
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        if (feedback) {
-          feedback.style.display = 'inline';
-          setTimeout(() => { feedback.style.display = 'none'; }, 2000);
-        }
+        if (feedback) { feedback.style.display = 'inline'; setTimeout(() => { feedback.style.display = 'none'; }, 2000); }
       } catch (e) { alert('No se pudo guardar el ticket.'); }
     });
   });
@@ -893,7 +901,7 @@
   ══════════════════════════════════════════ */
   function statusToClass(v) {
     const map = {
-      'GRIS_SIN_CONTACTO'    : 'gris',
+      'GRIS_SIN_CONTACTO'     : 'gris',
       'AZUL_VISITA_PROGRAMADA': 'azul-claro',
       'AZUL_VISITA_REALIZADA' : 'azul-oscuro',
       'NARANJA_QUIERE_VISITA' : 'naranja',
@@ -922,178 +930,166 @@
       try {
         const res = await fetch(`/clientes/${clientId}/interacciones/${interactionId}/status`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            [csrfHeader]: csrfToken
-          },
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded', [csrfHeader]: csrfToken },
           body: 'status=' + encodeURIComponent(value)
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         sel.setAttribute('data-old', value);
       } catch (e) {
-        sel.value = oldValue;
         if (dot) paintDot(dot, oldValue);
+        sel.value = oldValue;
         alert('No se pudo actualizar el estado.');
       }
     });
   });
 
 })();
-
-/* ════════════════════════════════════════════
-   MODAL COMENTARIOS — compartido entre vistas
-════════════════════════════════════════════ */
-const csrfToken  = document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || '';
-const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
-
-let _commentTargetSpan = null;
-let _commentClientId   = null;
-let _commentIid        = null;
-
-const commentEditor   = document.getElementById('commentEditor');
-const commentBackdrop = document.getElementById('commentModalBackdrop');
-
-function sanitizeHtml(html) {
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  // Eliminar cualquier tag que no sea <mark> o <br>
-  const walker = document.createTreeWalker(div, NodeFilter.SHOW_ELEMENT);
-  const toUnwrap = [];
-  let node = walker.nextNode();
-  while (node) {
-    const tag = node.tagName.toLowerCase();
-    if (tag !== 'mark' && tag !== 'br') toUnwrap.push(node);
-    node = walker.nextNode();
-  }
-  toUnwrap.forEach(el => el.replaceWith(...el.childNodes));
-  // Limpiar atributos de <mark>
-  div.querySelectorAll('mark').forEach(m => {
-    while (m.attributes.length > 0) m.removeAttribute(m.attributes[0].name);
-  });
-  return div.innerHTML;
-}
-
-function openCommentModal(span) {
-  _commentTargetSpan = span;
-  _commentClientId   = span.getAttribute('data-cid');
-  _commentIid        = span.getAttribute('data-iid');
-  const rawHtml = span.innerHTML.trim();
-  const isPlaceholder = span.style.color === 'rgb(204, 204, 204)' || rawHtml.includes('(editar)');
-  commentEditor.innerHTML = isPlaceholder ? '' : rawHtml;
-  commentBackdrop.classList.add('open');
-  setTimeout(() => {
-    commentEditor.focus();
-    const range = document.createRange();
-    range.selectNodeContents(commentEditor);
-    range.collapse(false);
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
-  }, 80);
-}
-
-function closeCommentModal() {
-  commentBackdrop.classList.remove('open');
-  _commentTargetSpan = null;
-}
-
-document.getElementById('btnCancelComment').addEventListener('click', closeCommentModal);
-
-commentEditor.addEventListener('keydown', function(e) {
-  if ((e.ctrlKey || e.altKey) && e.key === 'Enter') {
-    e.preventDefault();
-    document.execCommand('insertLineBreak');
-  }
-  if (e.ctrlKey && e.key === 'h') {
-    e.preventDefault();
-    applyHighlight();
-  }
-});
-
-document.getElementById('btnHighlight').addEventListener('click', function() {
-  commentEditor.focus();
-  applyHighlight();
-});
-
-document.getElementById('btnClearMark').addEventListener('click', function() {
-  commentEditor.focus();
-  const sel = window.getSelection();
-  if (!sel || sel.isCollapsed) return;
-  const range = sel.getRangeAt(0);
-  const fragment = range.extractContents();
-  fragment.querySelectorAll('mark').forEach(m => m.replaceWith(...m.childNodes));
-  range.insertNode(fragment);
-  sel.removeAllRanges();
-});
-
-document.getElementById('btnClearAll').addEventListener('click', function() {
-  commentEditor.innerHTML = '';
-  commentEditor.focus();
-});
-
-function applyHighlight() {
-  const sel = window.getSelection();
-  if (!sel || sel.isCollapsed) return;
-  const range = sel.getRangeAt(0);
-  const ancestor = range.commonAncestorContainer;
-  const markParent = ancestor.nodeType === 3
-    ? ancestor.parentElement?.closest('mark')
-    : ancestor.closest?.('mark');
-  if (markParent) {
-    markParent.replaceWith(...markParent.childNodes);
-    return;
-  }
-  const mark = document.createElement('mark');
-  try {
-    range.surroundContents(mark);
-  } catch(_) {
-    const fragment = range.extractContents();
-    mark.appendChild(fragment);
-    range.insertNode(mark);
-  }
-  sel.removeAllRanges();
-}
-
-document.getElementById('btnSaveComment').addEventListener('click', async function() {
-  if (!_commentIid || !_commentClientId) return;
-  const html = sanitizeHtml(commentEditor.innerHTML);
-  try {
-    const res = await fetch(`/clientes/${_commentClientId}/interacciones/${_commentIid}/comments`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        [csrfHeader]: csrfToken
-      },
-      body: 'comments=' + encodeURIComponent(html)
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-
-    // Actualizar la celda en tabla sin recargar
-    if (_commentTargetSpan) {
-      if (!html || html.trim() === '' || html.trim() === '<br>') {
-        _commentTargetSpan.innerHTML = '— <span style="font-size:10px;">(editar)</span>';
-        _commentTargetSpan.style.color = '#ccc';
-      } else {
-        _commentTargetSpan.innerHTML = html;
-        _commentTargetSpan.style.color = '#333';
-      }
-      // Mostrar feedback ✓
-      const feedback = _commentTargetSpan.closest('td')?.querySelector('.comments-feedback');
-      if (feedback) {
-        feedback.style.display = 'inline';
-        setTimeout(() => { feedback.style.display = 'none'; }, 2000);
-      }
-    }
-    closeCommentModal();
-  } catch(err) {
-    alert('Error al guardar el comentario. Revisa la consola.');
-    console.error(err);
-  }
-});
-
-commentBackdrop.addEventListener('click', function(e) {
-  if (e.target === this) closeCommentModal();
-});
 </script>
+
+<!-- Script del modal de comentarios (igual que antes) -->
+<script>
+  const csrfToken  = document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || '';
+  const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
+
+  let _commentTargetSpan = null;
+  let _commentClientId   = null;
+  let _commentIid        = null;
+
+  const commentEditor   = document.getElementById('commentEditor');
+  const commentBackdrop = document.getElementById('commentModalBackdrop');
+
+  function sanitizeHtml(html) {
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    const walker = document.createTreeWalker(div, NodeFilter.SHOW_ELEMENT);
+    const toUnwrap = [];
+    let node = walker.nextNode();
+    while (node) {
+      const tag = node.tagName.toLowerCase();
+      if (tag !== 'mark' && tag !== 'br') toUnwrap.push(node);
+      node = walker.nextNode();
+    }
+    toUnwrap.forEach(el => el.replaceWith(...el.childNodes));
+    div.querySelectorAll('mark').forEach(m => {
+      while (m.attributes.length > 0) m.removeAttribute(m.attributes[0].name);
+    });
+    return div.innerHTML;
+  }
+
+  function openCommentModal(span) {
+    _commentTargetSpan = span;
+    _commentClientId   = span.getAttribute('data-cid');
+    _commentIid        = span.getAttribute('data-iid');
+    const rawHtml      = span.innerHTML.trim();
+    const isPlaceholder = span.style.color === 'rgb(204, 204, 204)' || rawHtml.includes('(editar)');
+    commentEditor.innerHTML = isPlaceholder ? '' : rawHtml;
+    commentBackdrop.classList.add('open');
+    setTimeout(() => {
+      commentEditor.focus();
+      const range = document.createRange();
+      range.selectNodeContents(commentEditor);
+      range.collapse(false);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }, 80);
+  }
+
+  function closeCommentModal() {
+    commentBackdrop.classList.remove('open');
+    _commentTargetSpan = null;
+  }
+
+  document.getElementById('btnCancelComment').addEventListener('click', closeCommentModal);
+
+  commentEditor.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.altKey) && e.key === 'Enter') {
+      e.preventDefault();
+      document.execCommand('insertLineBreak');
+    }
+    if (e.ctrlKey && e.key === 'h') {
+      e.preventDefault();
+      applyHighlight();
+    }
+  });
+
+  document.getElementById('btnHighlight').addEventListener('click', function() {
+    commentEditor.focus();
+    applyHighlight();
+  });
+
+  document.getElementById('btnClearMark').addEventListener('click', function() {
+    commentEditor.focus();
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed) return;
+    const range = sel.getRangeAt(0);
+    const fragment = range.extractContents();
+    fragment.querySelectorAll('mark').forEach(m => m.replaceWith(...m.childNodes));
+    range.insertNode(fragment);
+    sel.removeAllRanges();
+  });
+
+  document.getElementById('btnClearAll').addEventListener('click', function() {
+    commentEditor.innerHTML = '';
+    commentEditor.focus();
+  });
+
+  function applyHighlight() {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed) return;
+    const range = sel.getRangeAt(0);
+    const ancestor = range.commonAncestorContainer;
+    const markParent = ancestor.nodeType === 3
+      ? ancestor.parentElement?.closest('mark')
+      : ancestor.closest?.('mark');
+    if (markParent) {
+      markParent.replaceWith(...markParent.childNodes);
+      return;
+    }
+    const mark = document.createElement('mark');
+    try {
+      range.surroundContents(mark);
+    } catch(_) {
+      const fragment = range.extractContents();
+      mark.appendChild(fragment);
+      range.insertNode(mark);
+    }
+    sel.removeAllRanges();
+  }
+
+  document.getElementById('btnSaveComment').addEventListener('click', async function() {
+    if (!_commentIid || !_commentClientId) return;
+    const html = sanitizeHtml(commentEditor.innerHTML);
+    try {
+      const res = await fetch(`/clientes/${_commentClientId}/interacciones/${_commentIid}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          [csrfHeader]: csrfToken
+        },
+        body: 'comments=' + encodeURIComponent(html)
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      if (_commentTargetSpan) {
+        if (!html || html.trim() === '' || html.trim() === '<br>') {
+          _commentTargetSpan.innerHTML = '— <span style="font-size:10px; color:#bbb;">(editar)</span>';
+          _commentTargetSpan.style.color = '#ccc';
+        } else {
+          _commentTargetSpan.innerHTML = html;
+          _commentTargetSpan.style.color = '#555';
+        }
+      }
+      closeCommentModal();
+    } catch(err) {
+      alert('Error al guardar el comentario.');
+      console.error(err);
+    }
+  });
+
+  commentBackdrop.addEventListener('click', function(e) {
+    if (e.target === this) closeCommentModal();
+  });
+</script>
+
 </body>
 </html>

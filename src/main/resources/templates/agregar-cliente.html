@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Nuevo cliente')}"></head>
+<body>
+<nav th:replace="~{fragments :: nav}"></nav>
+
+<div class="container">
+  <div class="card">
+    <h2>Nuevo cliente potencial</h2>
+    <div class="small" style="margin-bottom:16px; color:var(--muted);">
+      Cliente sin inmueble asignado aún. Podrás añadirle interacciones desde su ficha cuando lo necesites.
+    </div>
+
+    <form th:action="@{/clientes/nuevo}" th:object="${form}" method="post">
+
+      <div class="global-errors" th:if="${#fields.hasGlobalErrors()}">
+        <div th:each="e : ${#fields.globalErrors()}" th:text="${e}">Error</div>
+      </div>
+
+      <div class="grid">
+        <div>
+          <label>Tipo de cliente</label>
+          <select th:field="*{clientType}">
+            <option th:each="t : ${clientTypes}" th:value="${t}" th:text="${t}"></option>
+          </select>
+        </div>
+        <div>
+          <label>Nombre completo *</label>
+          <input th:field="*{fullName}" placeholder="Nombre y apellidos..."/>
+          <div class="field-error" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div>
+          <label>Empresa (opcional)</label>
+          <input th:field="*{companyName}" placeholder="Nombre de la empresa..."/>
+        </div>
+        <div>
+          <label>Código Solvia</label>
+          <input th:field="*{solviaCode}" placeholder="Ej: SOLVIA-123"/>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div>
+          <label>Teléfono 1</label>
+          <input th:field="*{phone1}" placeholder="600 000 000"/>
+          <div class="field-error" th:if="${#fields.hasErrors('phone1')}" th:errors="*{phone1}"></div>
+        </div>
+        <div>
+          <label>Teléfono 2</label>
+          <input th:field="*{phone2}" placeholder="600 000 000"/>
+        </div>
+        <div>
+          <label>Teléfono 3</label>
+          <input th:field="*{phone3}" placeholder="600 000 000"/>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div>
+          <label>Email 1</label>
+          <input th:field="*{email1}" placeholder="correo@ejemplo.com"/>
+          <div class="field-error" th:if="${#fields.hasErrors('email1')}" th:errors="*{email1}"></div>
+        </div>
+        <div>
+          <label>Email 2</label>
+          <input th:field="*{email2}" placeholder="correo@ejemplo.com"/>
+          <div class="field-error" th:if="${#fields.hasErrors('email2')}" th:errors="*{email2}"></div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <label>¿Por qué nos ha llamado? / ¿Qué busca?</label>
+        <textarea th:field="*{motivoContacto}"
+                  placeholder="Ej: Busca piso de 3 habitaciones en Madrid, presupuesto 200k. Le interesa zona norte..."></textarea>
+        <div class="field-error" th:if="${#fields.hasErrors('motivoContacto')}" th:errors="*{motivoContacto}"></div>
+      </div>
+
+      <div class="actions">
+        <button type="submit">Guardar cliente</button>
+        <a class="btn btn-secondary" th:href="@{/clientes}">Cancelar</a>
+      </div>
+
+    </form>
+  </div>
+</div>
+</body>
+</html>

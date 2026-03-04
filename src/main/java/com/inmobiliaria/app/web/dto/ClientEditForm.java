@@ -111,4 +111,11 @@ public class ClientEditForm {
     public void setPreVendaPropertyIds(List<Long> preVendaPropertyIds) {
         this.preVendaPropertyIds = preVendaPropertyIds != null ? preVendaPropertyIds : new ArrayList<>();
     }
+    
+    @Size(max = 500)
+    private String motivoContacto;
+
+    public String getMotivoContacto() { return motivoContacto; }
+    public void setMotivoContacto(String motivoContacto) { this.motivoContacto = motivoContacto; }
+
 }

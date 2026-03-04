@@ -46,19 +46,19 @@ public class NewInteractionForm {
 
     public LocalDate getContactDate() { return contactDate; }
     public void setContactDate(LocalDate contactDate) { this.contactDate = contactDate; }
-
+    
     public String getSolviaCode() { return solviaCode; }
     public void setSolviaCode(String solviaCode) { this.solviaCode = solviaCode; }
-
+    
     public ContactChannel getChannel() { return channel; }
     public void setChannel(ContactChannel channel) { this.channel = channel; }
-
+    
     public InterestStatus getStatus() { return status; }
     public void setStatus(InterestStatus status) { this.status = status; }
-
+    
     public String getComments() { return comments; }
     public void setComments(String comments) { this.comments = comments; }
-
+    
     public String getPropertyCode() { return propertyCode; }
     public void setPropertyCode(String propertyCode) { this.propertyCode = propertyCode; }
 

@@ -112,4 +112,11 @@ public class ClientIntakeForm {
 
     public String getMunicipality() { return municipality; }
     public void setMunicipality(String municipality) { this.municipality = municipality; }
+    
+    @Size(max = 500)
+    private String motivoContacto;
+
+    public String getMotivoContacto() { return motivoContacto; }
+    public void setMotivoContacto(String motivoContacto) { this.motivoContacto = motivoContacto; }
+
 }

@@ -35,11 +35,11 @@ public class ClientDetailController {
                                   ClientPropertyInteractionRepository interactionRepository,
                                   VisitRepository visitRepository,
                                   PropertyRepository propertyRepository) {
-        this.clientRepository = clientRepository;
+        this.clientRepository    = clientRepository;
         this.clientPhoneRepository = clientPhoneRepository;
         this.interactionRepository = interactionRepository;
-        this.visitRepository = visitRepository;
-        this.propertyRepository = propertyRepository;
+        this.visitRepository     = visitRepository;
+        this.propertyRepository  = propertyRepository;
     }
 
     // ── GET /clientes/{id} ───────────────────────────────────
@@ -52,16 +52,19 @@ public class ClientDetailController {
                 interactionRepository.findByClientIdWithPropertyOrderByContactDateDesc(client.getId());
         ClientEditForm form = buildEditForm(client, interactions);
         NewInteractionForm ni = buildPrefilledInteractionForm(client, interactions);
-        model.addAttribute("client", client);
-        model.addAttribute("form", form);
-        model.addAttribute("clientTypes", ClientType.values());
+        model.addAttribute("client",       client);
+        model.addAttribute("form",         form);
+        model.addAttribute("clientTypes",  ClientType.values());
         model.addAttribute("newInteraction", ni);
-        model.addAttribute("channels", ContactChannel.values());
-        model.addAttribute("statuses", InterestStatus.values());
+        model.addAttribute("channels",     ContactChannel.values());
+        model.addAttribute("statuses",     InterestStatus.values());
         model.addAttribute("interactions", interactions);
         model.addAttribute("visits",
                 visitRepository.findByClient_IdOrderByVisitAtDescIdDesc(client.getId()));
         model.addAttribute("catalogProperties", buildCatalog());
+        // ── NUEVO ──────────────────────────────────────────
+        model.addAttribute("motivoContacto", client.getMotivoContacto());
+        // ───────────────────────────────────────────────────
         return "client_detail";
     }
 
@@ -103,7 +106,6 @@ public class ClientDetailController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         if (it.getClient() == null || !it.getClient().getId().equals(clientId))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        // ▼ Sin trim() para preservar el HTML con <mark> y <br>
         String sanitized = (comments == null) ? "" : comments;
         it.setComments(sanitized.isBlank() ? "" : sanitized);
         interactionRepository.save(it);
@@ -162,6 +164,9 @@ public class ClientDetailController {
         client.setSolviaCode(t(form.getSolviaCode()));
         client.setPosibleOcupa(form.isPosibleOcupa());
         client.setCompradorFinal(form.isCompradorFinal());
+        // ── NUEVO ──────────────────────────────────────────
+        client.setMotivoContacto(t(form.getMotivoContacto()));
+        // ───────────────────────────────────────────────────
 
         List<ClientPropertyInteraction> interactions =
                 interactionRepository.findByClientIdWithPropertyOrderByContactDateDesc(client.getId());
@@ -302,19 +307,14 @@ public class ClientDetailController {
                 .stream()
                 .filter(p -> !p.isSold())
                 .map(p -> new PropertyCatalogDto(
-                        p.getId(),
-                        p.getPropertyCode(),
-                        p.getPropertyType(),
-                        p.getAddress(),
-                        p.getMunicipality(),
-                        p.isPreVendido(),
-                        p.isSold()
-                ))
+                        p.getId(), p.getPropertyCode(), p.getPropertyType(),
+                        p.getAddress(), p.getMunicipality(),
+                        p.isPreVendido(), p.isSold()))
                 .collect(Collectors.toList());
     }
 
     private ClientEditForm buildEditForm(Client client,
-                                         List<ClientPropertyInteraction> interactions) {
+                                          List<ClientPropertyInteraction> interactions) {
         ClientEditForm form = new ClientEditForm();
         form.setId(client.getId());
         form.setClientType(client.getClientType());
@@ -324,6 +324,9 @@ public class ClientDetailController {
         form.setSolviaCode(client.getSolviaCode());
         form.setPosibleOcupa(client.isPosibleOcupa());
         form.setCompradorFinal(client.isCompradorFinal());
+        // ── NUEVO ──────────────────────────────────────────
+        form.setMotivoContacto(client.getMotivoContacto());
+        // ───────────────────────────────────────────────────
         form.setPhone1(client.getPhones().stream()
                 .filter(p -> p.getPosition() == 1)
                 .map(ClientPhone::getPhoneNumber).findFirst().orElse(""));
@@ -345,8 +348,7 @@ public class ClientDetailController {
                     .map(ClientPropertyInteraction::getProperty)
                     .filter(p -> p.isPreVendido() && !p.isSold())
                     .map(Property::getId)
-                    .distinct()
-                    .toList();
+                    .distinct().toList();
             form.setPreVendaPropertyIds(preVendidos);
             if (!preVendidos.isEmpty()) form.setPreVenda(true);
 
@@ -355,8 +357,7 @@ public class ClientDetailController {
                         .map(ClientPropertyInteraction::getProperty)
                         .filter(Property::isSold)
                         .map(Property::getId)
-                        .distinct()
-                        .toList();
+                        .distinct().toList();
                 form.setPurchasedPropertyIds(vendidos);
             }
         }
@@ -376,7 +377,7 @@ public class ClientDetailController {
         if (interactions != null && !interactions.isEmpty()) {
             ClientPropertyInteraction last = interactions.get(0);
             if (last.getChannel() != null) ni.setChannel(last.getChannel());
-            if (last.getStatus() != null)  ni.setStatus(last.getStatus());
+            if (last.getStatus()  != null) ni.setStatus(last.getStatus());
             if (last.getProperty() != null) {
                 Property p = last.getProperty();
                 if (!t(p.getPropertyCode()).isBlank()) ni.setPropertyCode(p.getPropertyCode());
@@ -389,19 +390,22 @@ public class ClientDetailController {
     }
 
     private void repopulateDetailModel(Model model, Client client,
-                                       ClientEditForm editForm,
-                                       NewInteractionForm newInteractionForm) {
-        model.addAttribute("client", client);
-        model.addAttribute("form", editForm);
-        model.addAttribute("clientTypes", ClientType.values());
+                                        ClientEditForm editForm,
+                                        NewInteractionForm newInteractionForm) {
+        model.addAttribute("client",       client);
+        model.addAttribute("form",         editForm);
+        model.addAttribute("clientTypes",  ClientType.values());
         model.addAttribute("newInteraction", newInteractionForm);
-        model.addAttribute("channels", ContactChannel.values());
-        model.addAttribute("statuses", InterestStatus.values());
+        model.addAttribute("channels",     ContactChannel.values());
+        model.addAttribute("statuses",     InterestStatus.values());
         model.addAttribute("interactions",
                 interactionRepository.findByClientIdWithPropertyOrderByContactDateDesc(client.getId()));
         model.addAttribute("visits",
                 visitRepository.findByClient_IdOrderByVisitAtDescIdDesc(client.getId()));
         model.addAttribute("catalogProperties", buildCatalog());
+        // ── NUEVO ──────────────────────────────────────────
+        model.addAttribute("motivoContacto", client.getMotivoContacto());
+        // ───────────────────────────────────────────────────
     }
 
     private void upsertPhone(Client client, int position, String number) {
@@ -446,7 +450,7 @@ public class ClientDetailController {
         String trimmed = s.trim();
         if (trimmed.isEmpty()) return "";
         boolean hasDdi = trimmed.startsWith("+");
-        String digits = trimmed.replaceAll("[^0-9]", "");
+        String digits  = trimmed.replaceAll("[^0-9]", "");
         return hasDdi ? "+" + digits : digits;
     }
 
