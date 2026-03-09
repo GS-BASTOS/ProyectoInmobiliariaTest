@@ -13,8 +13,8 @@
 
   /* ── Bienvenida ── */
   .welcome-box {
-    background: #0b1f5c;
-    background: linear-gradient(135deg, #0b1f5c 0%, #1f3a8a 100%);
+    background: #111111;
+    background: linear-gradient(135deg, #111111 0%, #2a2a2a 100%);
     color: #fff;
     border-radius: 16px;
     padding: 28px 32px;
@@ -25,7 +25,7 @@
     gap: 16px;
   }
   .welcome-box h1 { margin: 0; font-size: 26px; font-weight: 800; }
-  .welcome-box p  { margin: 6px 0 0; color: rgba(255,255,255,.65); font-size: 14px; text-transform: capitalize; }
+  .welcome-box p  { margin: 6px 0 0; color: rgba(255,255,255,.55); font-size: 14px; text-transform: capitalize; }
 
   /* ── Mini calendario ── */
   .mini-cal {
@@ -53,7 +53,7 @@
     color: var(--text);
   }
   .cal-grid .day.today {
-    background: #0b1f5c; color: #fff; font-weight: 800;
+    background: #111; color: #fff; font-weight: 800;
   }
   .cal-grid .day.empty { visibility: hidden; }
 
@@ -95,7 +95,7 @@
   .visit-today-item:last-child { margin-bottom: 0; }
   .visit-today-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,.08); }
   .visit-hour {
-    font-weight: 800; color: #0b1f5c; font-size: 16px;
+    font-weight: 800; color: #111; font-size: 16px;
     display: inline-flex; align-items: center; gap: 6px;
   }
 
@@ -195,12 +195,12 @@
         </div>
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
           <a class="btn" th:href="@{/interesados}"
-             style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.3);
+             style="background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.25);
                     color:#fff; font-size:12px; padding:8px 16px;">
             📋 Interesados
           </a>
           <a class="btn" th:href="@{/clientes}"
-             style="background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.3);
+             style="background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.25);
                     color:#fff; font-size:12px; padding:8px 16px;">
             👥 Clientes
           </a>
@@ -273,7 +273,7 @@
             <span style="color:var(--muted); font-size:12px;"
                   th:text="' · @' + ${u.username}"> · @user</span>
             <span th:if="${u.role == 'ADMIN'}"
-                  style="font-size:10px; background:#0b1f5c; color:#fff;
+                  style="font-size:10px; background:#111; color:#fff;
                          border-radius:4px; padding:1px 6px; margin-left:6px; font-weight:700;">
               ADMIN
             </span>
@@ -395,7 +395,7 @@
   (function() {
     const labels = TOP_PROPS.map(p => p[0]);
     const data   = TOP_PROPS.map(p => p[1]);
-    const COLORS = ['#1f5eff','#f5c800','#b42318','#168a53','#b02cff',
+    const COLORS = ['#111111','#f5c800','#b42318','#168a53','#b02cff',
                     '#e07a18','#5aa7ff','#ff4d6d','#00b4d8','#6d6875'];
     const ctx = document.getElementById('chartInmuebles').getContext('2d');
     new Chart(ctx, {
