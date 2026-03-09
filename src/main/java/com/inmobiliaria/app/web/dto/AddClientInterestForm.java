@@ -68,6 +68,10 @@ public class AddClientInterestForm {
     @Size(max = 500)
     private String comments;
 
+    // ── NO MOLESTAR ────────────────────────────────────────
+    private boolean noMolestar;
+    // ───────────────────────────────────────────────────────
+
     public AddClientInterestForm() {}
 
     public ClientType getClientType() { return clientType; }
@@ -120,4 +124,7 @@ public class AddClientInterestForm {
 
     public String getComments() { return comments; }
     public void setComments(String comments) { this.comments = comments; }
+
+    public boolean isNoMolestar() { return noMolestar; }
+    public void setNoMolestar(boolean noMolestar) { this.noMolestar = noMolestar; }
 }

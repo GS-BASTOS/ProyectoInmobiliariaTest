@@ -1,14 +1,13 @@
 package com.inmobiliaria.app.web;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.inmobiliaria.app.domain.Property;
 import com.inmobiliaria.app.domain.PropertyMedia;
 import com.inmobiliaria.app.repo.ClientPropertyInteractionRepository;
 import com.inmobiliaria.app.repo.PropertyMediaRepository;
 import com.inmobiliaria.app.repo.PropertyRepository;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.nio.file.*;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 
 @Controller
 public class PropertyDetailController {
@@ -26,16 +24,16 @@ public class PropertyDetailController {
     private final PropertyRepository propertyRepository;
     private final PropertyMediaRepository mediaRepository;
     private final ClientPropertyInteractionRepository interactionRepository;
-
-    @Value("${app.upload.dir:uploads/property-media}")
-    private String uploadDir;
+    private final Cloudinary cloudinary;
 
     public PropertyDetailController(PropertyRepository propertyRepository,
                                     PropertyMediaRepository mediaRepository,
-                                    ClientPropertyInteractionRepository interactionRepository) {
-        this.propertyRepository = propertyRepository;
-        this.mediaRepository    = mediaRepository;
+                                    ClientPropertyInteractionRepository interactionRepository,
+                                    Cloudinary cloudinary) {
+        this.propertyRepository    = propertyRepository;
+        this.mediaRepository       = mediaRepository;
         this.interactionRepository = interactionRepository;
+        this.cloudinary            = cloudinary;
     }
 
     // ── GET /inmuebles/{id} ──────────────────────────────────
@@ -47,8 +45,8 @@ public class PropertyDetailController {
         List<PropertyMedia> media = mediaRepository.findByPropertyIdOrderByIdAsc(id);
         long interestedCount = interactionRepository.countByPropertyId(id);
 
-        model.addAttribute("property", property);
-        model.addAttribute("mediaList", media);
+        model.addAttribute("property",        property);
+        model.addAttribute("mediaList",       media);
         model.addAttribute("interestedCount", interestedCount);
         return "property_detail";
     }
@@ -65,6 +63,7 @@ public class PropertyDetailController {
                          @RequestParam(defaultValue = "false") boolean hasAlarm,
                          @RequestParam(required = false) String alarmCode,
                          @RequestParam(required = false) String notes) {
+
         Property p = propertyRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
@@ -86,70 +85,82 @@ public class PropertyDetailController {
     @PostMapping("/inmuebles/{id}/media")
     public String uploadMedia(@PathVariable Long id,
                               @RequestParam("files") List<MultipartFile> files) throws IOException {
+
         Property property = propertyRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        Path dir = Paths.get(uploadDir, String.valueOf(id));
-        Files.createDirectories(dir);
-
         for (MultipartFile file : files) {
             if (file.isEmpty()) continue;
-            String contentType = file.getContentType() != null ? file.getContentType() : "";
-            String mediaType = contentType.startsWith("video/") ? "VIDEO" : "IMAGE";
-            String ext = getExtension(file.getOriginalFilename());
-            String fileName = UUID.randomUUID() + ext;
 
-            Files.copy(file.getInputStream(), dir.resolve(fileName),
-                    StandardCopyOption.REPLACE_EXISTING);
+            String contentType  = file.getContentType() != null ? file.getContentType() : "";
+            String originalName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "file";
+
+            // ── Determinar resource_type para Cloudinary ──
+            String resourceType;
+            if (contentType.startsWith("video/")) {
+                resourceType = "video";
+            } else if (contentType.equals("application/pdf")
+                    || contentType.startsWith("application/msword")
+                    || contentType.startsWith("application/vnd")) {
+                resourceType = "raw";
+            } else {
+                resourceType = "image";
+            }
+
+            // ── Determinar mediaType interno ──
+            String mediaType;
+            if (resourceType.equals("video"))               mediaType = "VIDEO";
+            else if (contentType.equals("application/pdf")) mediaType = "PDF";
+            else if (resourceType.equals("raw"))            mediaType = "DOCUMENT";
+            else                                            mediaType = "IMAGE";
+
+            // ── Parámetros de subida ──
+            Map uploadParams;
+            if (resourceType.equals("raw")) {
+                String extension = "";
+                int dotIndex = originalName.lastIndexOf('.');
+                if (dotIndex > 0) {
+                    extension = originalName.substring(dotIndex); // ej: ".pdf"
+                }
+                uploadParams = ObjectUtils.asMap(
+                    "resource_type", "raw",
+                    "public_id",     "inmobiliaria/" + id + "/" + System.currentTimeMillis() + extension,
+                    "use_filename",  false,
+                    "access_mode",   "public"
+                );
+            } else {
+                uploadParams = ObjectUtils.asMap(
+                    "resource_type", resourceType,
+                    "folder",        "inmobiliaria/" + id
+                );
+            }
+
+            // ── Subir a Cloudinary ──
+            Map result = cloudinary.uploader().upload(file.getBytes(), uploadParams);
 
             PropertyMedia media = new PropertyMedia();
             media.setProperty(property);
-            media.setFileName(fileName);
-            media.setOriginalName(file.getOriginalFilename());
+            media.setOriginalName(originalName);
             media.setMediaType(mediaType);
-            media.setContentType(contentType);
+            media.setCloudinaryUrl((String) result.get("secure_url"));
+            media.setCloudinaryId((String) result.get("public_id"));
             mediaRepository.save(media);
         }
+
         return "redirect:/inmuebles/" + id;
     }
 
-    // ── DELETE /inmuebles/{id}/media/{mediaId} ───────────────
+    // ── POST /inmuebles/{id}/media/{mediaId}/eliminar ────────
+    // Solo borra el registro de BD — el archivo en Cloudinary se conserva
     @PostMapping("/inmuebles/{id}/media/{mediaId}/eliminar")
     public String deleteMedia(@PathVariable Long id,
-                              @PathVariable Long mediaId) throws IOException {
+                              @PathVariable Long mediaId) {
         PropertyMedia media = mediaRepository.findById(mediaId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-        Path file = Paths.get(uploadDir, String.valueOf(id), media.getFileName());
-        Files.deleteIfExists(file);
         mediaRepository.delete(media);
-
         return "redirect:/inmuebles/" + id;
     }
 
-    // ── GET /inmuebles/{id}/media/{mediaId}/raw ──────────────
-    // Sirve el archivo directamente (para <img> y <video>)
-    @GetMapping("/inmuebles/{id}/media/{mediaId}/raw")
-    @ResponseBody
-    public ResponseEntity<byte[]> serveMedia(@PathVariable Long id,
-                                              @PathVariable Long mediaId) throws IOException {
-        PropertyMedia media = mediaRepository.findById(mediaId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-        Path file = Paths.get(uploadDir, String.valueOf(id), media.getFileName());
-        if (!Files.exists(file)) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-
-        byte[] bytes = Files.readAllBytes(file);
-        MediaType mt = MediaType.parseMediaType(
-                media.getContentType() != null ? media.getContentType() : "application/octet-stream");
-
-        return ResponseEntity.ok().contentType(mt).body(bytes);
-    }
-
-    private String getExtension(String filename) {
-        if (filename == null || !filename.contains(".")) return "";
-        return filename.substring(filename.lastIndexOf('.'));
-    }
-
+    // ── Helpers ─────────────────────────────────────────────
     private static String t(String s) { return s == null ? "" : s.trim(); }
 }

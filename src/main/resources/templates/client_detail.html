@@ -94,7 +94,7 @@
   .tabla-interacciones tbody tr:last-child td { border-bottom:none; }
   .tabla-interacciones tbody tr:hover { background:#fafafa; }
 
-  /* ── Section block (bloques crema) ── */
+  /* ── Section block ── */
   .section-block {
     padding:18px 20px; border-radius:14px;
     border:1px solid var(--line); background:#faf8f4; margin-bottom:20px;
@@ -143,9 +143,11 @@
   <div class="card"
        th:style="${client.posibleOcupa
                    ? 'border-left:6px solid #b42318;'
-                   : client.compradorFinal
-                     ? 'border-left:6px solid #168a53;'
-                     : 'border-left:6px solid var(--line);'}">
+                   : client.noMolestar
+                     ? 'border-left:6px solid #7b1fa2;'
+                     : client.compradorFinal
+                       ? 'border-left:6px solid #168a53;'
+                       : 'border-left:6px solid var(--line);'}">
 
     <!-- Cabecera -->
     <div style="display:flex; align-items:flex-start; justify-content:space-between;
@@ -177,6 +179,16 @@
           </svg>
           POSIBLE OKUPA
         </span>
+
+        <!-- ── NO MOLESTAR badge cabecera ── -->
+        <span th:if="${client.noMolestar}"
+              style="display:inline-flex; align-items:center; gap:6px;
+                     background:#f3e5f5; border:1px solid #7b1fa2; border-radius:999px;
+                     padding:4px 12px; font-size:12px; color:#7b1fa2; font-weight:800;
+                     letter-spacing:0.4px; text-transform:uppercase;
+                     box-shadow:0 0 0 3px rgba(123,31,162,.10);">
+          🚫 NO MOLESTAR
+        </span>
       </div>
 
       <a class="btn btn-secondary" th:href="@{/clientes}"
@@ -190,6 +202,13 @@
                 border-left:4px solid #b42318; border-radius:8px;
                 color:#b42318; font-size:13px;">
       <strong>⚠ Nota:</strong> <span th:text="${client.generalNotes}"></span>
+    </div>
+
+    <!-- ── NO MOLESTAR banner ── -->
+    <div th:if="${client.noMolestar}"
+         style="margin-top:10px; padding:10px 14px; background:#f3e5f5;
+                border-left:4px solid #7b1fa2; border-radius:8px; font-size:13px; color:#4a148c;">
+      <strong>🚫 No molestar:</strong> Este cliente no quiere recibir llamadas ni emails.
     </div>
 
     <div th:if="${motivoContacto != null and !#strings.isEmpty(motivoContacto)}"
@@ -228,6 +247,7 @@
         <div style="display:flex; flex-direction:column; gap:4px;">
           <span th:if="${#lists.isEmpty(client.phones)}">—</span>
           <a th:each="p : ${client.phones}" class="wa-link"
+             th:style="${client.noMolestar} ? 'opacity:0.4; text-decoration:line-through; pointer-events:none;' : ''"
              th:href="${'https://wa.me/' + #strings.replace(#strings.replace(p.phoneNumber, '+', ''), ' ', '')}"
              target="_blank"
              th:text="${p.phoneNumber}">600000000</a>
@@ -238,6 +258,7 @@
         <div>
           <span th:if="${#lists.isEmpty(client.emails)}">—</span>
           <span th:each="e,st : ${client.emails}"
+                th:style="${client.noMolestar} ? 'opacity:0.4; text-decoration:line-through;' : ''"
                 th:text="${e.email} + ${!st.last ? ', ' : ''}">mail@mail.com</span>
         </div>
       </div>
@@ -708,6 +729,16 @@
             </span>
           </label>
 
+          <!-- ── NO MOLESTAR checkbox editar ── -->
+          <label style="display:inline-flex; align-items:center; gap:8px; cursor:pointer; margin:0;">
+            <input type="checkbox" th:field="*{noMolestar}"
+                   style="accent-color:#7b1fa2;"/>
+            <span style="display:inline-flex; align-items:center; gap:6px;
+                         color:#7b1fa2; font-weight:700; text-transform:uppercase; font-size:13px;">
+              🚫 No molestar
+            </span>
+          </label>
+
         </div>
 
         <!-- Panel Pre Venda -->
@@ -949,7 +980,7 @@
       panelPreVenda.style.display = chkPreVenda.checked ? 'block' : 'none';
     });
   }
-  const chkComprador = document.getElementById('chkCompradorFinal');
+  const chkComprador   = document.getElementById('chkCompradorFinal');
   const panelComprador = document.getElementById('panelInmuebleComprado');
   if (chkComprador && panelComprador) {
     chkComprador.addEventListener('change', () => {

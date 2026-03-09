@@ -14,33 +14,74 @@ public class PropertyMedia {
     @JoinColumn(name = "property_id", nullable = false)
     private Property property;
 
-    @Column(name = "file_name", nullable = false, length = 255)
-    private String fileName;
-
     @Column(name = "original_name", length = 255)
     private String originalName;
 
     @Column(name = "media_type", length = 20)
-    private String mediaType; // "IMAGE" o "VIDEO"
+    private String mediaType; // "IMAGE" | "VIDEO" | "PDF" | "DOCUMENT"
 
-    @Column(name = "content_type", length = 80)
-    private String contentType; // "image/jpeg", "video/mp4", etc.
+    @Column(name = "cloudinary_url", length = 512)
+    private String cloudinaryUrl;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    @Column(name = "cloudinary_id", length = 255)
+    private String cloudinaryId;
 
-    public Property getProperty() { return property; }
-    public void setProperty(Property property) { this.property = property; }
+    // ── Getters & Setters ──────────────────────────────────
 
-    public String getFileName() { return fileName; }
-    public void setFileName(String fileName) { this.fileName = fileName; }
+    public Long getId()                        { return id; }
+    public void setId(Long id)                 { this.id = id; }
 
-    public String getOriginalName() { return originalName; }
-    public void setOriginalName(String originalName) { this.originalName = originalName; }
+    public Property getProperty()              { return property; }
+    public void setProperty(Property p)        { this.property = p; }
 
-    public String getMediaType() { return mediaType; }
-    public void setMediaType(String mediaType) { this.mediaType = mediaType; }
+    public String getOriginalName()            { return originalName; }
+    public void setOriginalName(String v)      { this.originalName = v; }
 
-    public String getContentType() { return contentType; }
-    public void setContentType(String contentType) { this.contentType = contentType; }
+    public String getMediaType()               { return mediaType; }
+    public void setMediaType(String v)         { this.mediaType = v; }
+
+    public String getCloudinaryUrl()           { return cloudinaryUrl; }
+    public void setCloudinaryUrl(String v)     { this.cloudinaryUrl = v; }
+
+    public String getCloudinaryId()            { return cloudinaryId; }
+    public void setCloudinaryId(String v)      { this.cloudinaryId = v; }
+
+    // ── URL de descarga con nombre original ───────────────
+    // Inserta fl_attachment:<nombre> en la URL de Cloudinary
+    // para que el navegador descargue el archivo con su nombre real.
+    @Transient
+    public String getDownloadUrl() {
+        if (cloudinaryUrl == null) return "#";
+        String name = (originalName != null ? originalName : "archivo");
+
+        // 1. Eliminar acentos
+        name = java.text.Normalizer.normalize(name, java.text.Normalizer.Form.NFD)
+                                   .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+
+        // 2. Limpiar caracteres problemáticos
+        name = name.replace(" ",  "_")
+                   .replace(",",  "")
+                   .replace(";",  "")
+                   .replace("(",  "")
+                   .replace(")",  "")
+                   .replace("&",  "")
+                   .replace("?",  "")
+                   .replace("#",  "")
+                   .replace("[",  "")
+                   .replace("]",  "")
+                   .replace("'",  "")
+                   .replace("\"", "")
+                   .replace("/",  "-");
+
+        // 3. ── CLAVE: quitar la extensión del nombre para fl_attachment ──
+        //    Cloudinary confunde "archivo.pdf" con una transformación
+        int dot = name.lastIndexOf('.');
+        if (dot > 0) {
+            name = name.substring(0, dot);
+        }
+
+        return cloudinaryUrl.replace("/upload/", "/upload/fl_attachment:" + name + "/");
+    }
+
+
 }

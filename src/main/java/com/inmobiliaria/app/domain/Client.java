@@ -41,11 +41,14 @@ public class Client {
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean compradorFinal = false;
 
-    // ── NUEVO ──────────────────────────────────────────────
+    // ── NO MOLESTAR ────────────────────────────────────────
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean noMolestar = false;
+    // ───────────────────────────────────────────────────────
+
     @Size(max = 500)
     @Column(length = 500)
     private String motivoContacto;
-    // ───────────────────────────────────────────────────────
 
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("position ASC, id ASC")
@@ -54,8 +57,6 @@ public class Client {
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("position ASC, id ASC")
     private List<ClientEmail> emails = new ArrayList<>();
-
-    // ── Getters y setters ──────────────────────────────────
 
     public Long getId() { return id; }
     public ClientType getClientType() { return clientType; }
@@ -72,6 +73,8 @@ public class Client {
     public void setPosibleOcupa(boolean posibleOcupa) { this.posibleOcupa = posibleOcupa; }
     public boolean isCompradorFinal() { return compradorFinal; }
     public void setCompradorFinal(boolean compradorFinal) { this.compradorFinal = compradorFinal; }
+    public boolean isNoMolestar() { return noMolestar; }
+    public void setNoMolestar(boolean noMolestar) { this.noMolestar = noMolestar; }
     public String getMotivoContacto() { return motivoContacto; }
     public void setMotivoContacto(String motivoContacto) { this.motivoContacto = motivoContacto; }
     public List<ClientPhone> getPhones() { return phones; }

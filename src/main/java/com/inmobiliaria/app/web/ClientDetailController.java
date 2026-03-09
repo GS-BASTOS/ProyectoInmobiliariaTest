@@ -31,10 +31,10 @@ public class ClientDetailController {
     private final PropertyRepository propertyRepository;
 
     public ClientDetailController(ClientRepository clientRepository,
-                                  ClientPhoneRepository clientPhoneRepository,
-                                  ClientPropertyInteractionRepository interactionRepository,
-                                  VisitRepository visitRepository,
-                                  PropertyRepository propertyRepository) {
+                                   ClientPhoneRepository clientPhoneRepository,
+                                   ClientPropertyInteractionRepository interactionRepository,
+                                   VisitRepository visitRepository,
+                                   PropertyRepository propertyRepository) {
         this.clientRepository    = clientRepository;
         this.clientPhoneRepository = clientPhoneRepository;
         this.interactionRepository = interactionRepository;
@@ -52,19 +52,17 @@ public class ClientDetailController {
                 interactionRepository.findByClientIdWithPropertyOrderByContactDateDesc(client.getId());
         ClientEditForm form = buildEditForm(client, interactions);
         NewInteractionForm ni = buildPrefilledInteractionForm(client, interactions);
-        model.addAttribute("client",       client);
-        model.addAttribute("form",         form);
-        model.addAttribute("clientTypes",  ClientType.values());
+        model.addAttribute("client", client);
+        model.addAttribute("form", form);
+        model.addAttribute("clientTypes", ClientType.values());
         model.addAttribute("newInteraction", ni);
-        model.addAttribute("channels",     ContactChannel.values());
-        model.addAttribute("statuses",     InterestStatus.values());
+        model.addAttribute("channels", ContactChannel.values());
+        model.addAttribute("statuses", InterestStatus.values());
         model.addAttribute("interactions", interactions);
         model.addAttribute("visits",
                 visitRepository.findByClient_IdOrderByVisitAtDescIdDesc(client.getId()));
         model.addAttribute("catalogProperties", buildCatalog());
-        // ── NUEVO ──────────────────────────────────────────
         model.addAttribute("motivoContacto", client.getMotivoContacto());
-        // ───────────────────────────────────────────────────
         return "client_detail";
     }
 
@@ -164,9 +162,8 @@ public class ClientDetailController {
         client.setSolviaCode(t(form.getSolviaCode()));
         client.setPosibleOcupa(form.isPosibleOcupa());
         client.setCompradorFinal(form.isCompradorFinal());
-        // ── NUEVO ──────────────────────────────────────────
+        client.setNoMolestar(form.isNoMolestar());                   // ← NO MOLESTAR
         client.setMotivoContacto(t(form.getMotivoContacto()));
-        // ───────────────────────────────────────────────────
 
         List<ClientPropertyInteraction> interactions =
                 interactionRepository.findByClientIdWithPropertyOrderByContactDateDesc(client.getId());
@@ -314,7 +311,7 @@ public class ClientDetailController {
     }
 
     private ClientEditForm buildEditForm(Client client,
-                                          List<ClientPropertyInteraction> interactions) {
+                                         List<ClientPropertyInteraction> interactions) {
         ClientEditForm form = new ClientEditForm();
         form.setId(client.getId());
         form.setClientType(client.getClientType());
@@ -324,9 +321,8 @@ public class ClientDetailController {
         form.setSolviaCode(client.getSolviaCode());
         form.setPosibleOcupa(client.isPosibleOcupa());
         form.setCompradorFinal(client.isCompradorFinal());
-        // ── NUEVO ──────────────────────────────────────────
+        form.setNoMolestar(client.isNoMolestar());                   // ← NO MOLESTAR
         form.setMotivoContacto(client.getMotivoContacto());
-        // ───────────────────────────────────────────────────
         form.setPhone1(client.getPhones().stream()
                 .filter(p -> p.getPosition() == 1)
                 .map(ClientPhone::getPhoneNumber).findFirst().orElse(""));
@@ -380,10 +376,10 @@ public class ClientDetailController {
             if (last.getStatus()  != null) ni.setStatus(last.getStatus());
             if (last.getProperty() != null) {
                 Property p = last.getProperty();
-                if (!t(p.getPropertyCode()).isBlank()) ni.setPropertyCode(p.getPropertyCode());
-                if (!t(p.getPropertyType()).isBlank()) ni.setPropertyType(p.getPropertyType());
-                if (!t(p.getAddress()).isBlank())      ni.setAddress(p.getAddress());
-                if (!t(p.getMunicipality()).isBlank()) ni.setMunicipality(p.getMunicipality());
+                if (!t(p.getPropertyCode()).isBlank())  ni.setPropertyCode(p.getPropertyCode());
+                if (!t(p.getPropertyType()).isBlank())  ni.setPropertyType(p.getPropertyType());
+                if (!t(p.getAddress()).isBlank())        ni.setAddress(p.getAddress());
+                if (!t(p.getMunicipality()).isBlank())   ni.setMunicipality(p.getMunicipality());
             }
         }
         return ni;
@@ -392,20 +388,18 @@ public class ClientDetailController {
     private void repopulateDetailModel(Model model, Client client,
                                         ClientEditForm editForm,
                                         NewInteractionForm newInteractionForm) {
-        model.addAttribute("client",       client);
-        model.addAttribute("form",         editForm);
-        model.addAttribute("clientTypes",  ClientType.values());
+        model.addAttribute("client", client);
+        model.addAttribute("form", editForm);
+        model.addAttribute("clientTypes", ClientType.values());
         model.addAttribute("newInteraction", newInteractionForm);
-        model.addAttribute("channels",     ContactChannel.values());
-        model.addAttribute("statuses",     InterestStatus.values());
+        model.addAttribute("channels", ContactChannel.values());
+        model.addAttribute("statuses", InterestStatus.values());
         model.addAttribute("interactions",
                 interactionRepository.findByClientIdWithPropertyOrderByContactDateDesc(client.getId()));
         model.addAttribute("visits",
                 visitRepository.findByClient_IdOrderByVisitAtDescIdDesc(client.getId()));
         model.addAttribute("catalogProperties", buildCatalog());
-        // ── NUEVO ──────────────────────────────────────────
         model.addAttribute("motivoContacto", client.getMotivoContacto());
-        // ───────────────────────────────────────────────────
     }
 
     private void upsertPhone(Client client, int position, String number) {
@@ -441,7 +435,7 @@ public class ClientDetailController {
             if (!found.getClient().getId().equals(editingClientId))
                 br.rejectValue(fieldName, "phoneExists",
                         "Ese teléfono ya está asignado a otro cliente (ID "
-                                + found.getClient().getId() + ").");
+                        + found.getClient().getId() + ").");
         });
     }
 
@@ -450,7 +444,7 @@ public class ClientDetailController {
         String trimmed = s.trim();
         if (trimmed.isEmpty()) return "";
         boolean hasDdi = trimmed.startsWith("+");
-        String digits  = trimmed.replaceAll("[^0-9]", "");
+        String digits = trimmed.replaceAll("[^0-9]", "");
         return hasDdi ? "+" + digits : digits;
     }
 

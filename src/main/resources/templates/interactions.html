@@ -40,6 +40,12 @@
   .row-okupa           { background:#fff5f5 !important; border-left:3px solid #b42318; }
   .row-comprador       { background:#f0faf4 !important; border-left:3px solid #168a53; }
   .row-comprador-other { opacity:0.45; }
+  .row-no-molestar     { background:#faf5ff !important; border-left:3px solid #7b1fa2; }
+
+  /* No Molestar: teléfonos y emails visualmente desactivados */
+  tr.row-no-molestar .wa-link  { opacity:0.4; text-decoration:line-through; pointer-events:none; }
+  tr.row-no-molestar .email-item { opacity:0.2; cursor:not-allowed; pointer-events:none; }
+  tr.row-no-molestar .copyable   { opacity:0.35; pointer-events:none; cursor:not-allowed; }
 
   /* ── Chips ── */
   .chip {
@@ -53,6 +59,7 @@
   .chip-green  { background:#e8f5e9; border:1px solid #168a53; color:#168a53; }
   .chip-orange { background:#fff4e6; border:1px solid #e07a18; color:#a05800; }
   .chip-red    { background:#ffebee; border:1px solid #b42318; color:#b42318; }
+  .chip-purple { background:#f3e5f5; border:1px solid #7b1fa2; color:#7b1fa2; }
 
   /* ── Property card ── */
   .prop-code      { font-size:13px; font-weight:800; color:#111; text-decoration:none; letter-spacing:0.3px; }
@@ -531,14 +538,17 @@
       </thead>
       <tbody>
         <tr th:each="it : ${items}"
-            th:attr="data-excluido=${it.client.posibleOcupa or it.client.compradorFinal} ? 'true' : null"
+            th:attr="data-excluido=${it.client.posibleOcupa or it.client.compradorFinal or it.client.noMolestar} ? 'true' : null,
+                     data-no-molestar=${it.client.noMolestar} ? 'true' : null"
             th:classappend="${it.client.posibleOcupa
                               ? 'row-okupa'
-                              : it.client.compradorFinal and it.property.sold
-                                ? 'row-comprador'
-                                : it.client.compradorFinal
-                                  ? 'row-comprador-other'
-                                  : ''}">
+                              : it.client.noMolestar
+                                ? 'row-no-molestar'
+                                : it.client.compradorFinal and it.property.sold
+                                  ? 'row-comprador'
+                                  : it.client.compradorFinal
+                                    ? 'row-comprador-other'
+                                    : ''}">
 
           <!-- ESTADO -->
           <td style="text-align:center; padding-top:13px; vertical-align:top;">
@@ -559,7 +569,9 @@
                            ? 'font-weight:700; color:#b42318;'
                            : it.client.compradorFinal
                              ? 'font-weight:700; color:#168a53;'
-                             : 'font-weight:600;'}">
+                             : it.client.noMolestar
+                               ? 'font-weight:700; color:#7b1fa2;'
+                               : 'font-weight:600;'}">
               Cliente
             </a>
             <div th:if="${it.client.companyName != null and !#strings.isEmpty(it.client.companyName)}"
@@ -580,6 +592,11 @@
               <span th:if="${it.client.compradorFinal}" class="chip chip-green"
                     style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.3px;">
                 💰 COMPRADOR
+              </span>
+              <!-- ── NO MOLESTAR badge ── -->
+              <span th:if="${it.client.noMolestar}" class="chip chip-purple"
+                    style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.3px;">
+                🚫 NO MOL.
               </span>
             </div>
           </td>
@@ -719,7 +736,7 @@
 
           <!-- VISITA -->
           <td style="text-align:center; vertical-align:middle; padding:6px;">
-            <button th:if="${!it.client.posibleOcupa}"
+            <button th:if="${!it.client.posibleOcupa and !it.client.noMolestar}"
                     type="button"
                     th:attr="data-interaction-id=${it.id},
                              data-client-name=${it.client.fullName},
@@ -745,6 +762,15 @@
                   title="No se puede programar visita a un posible Okupa"
                   style="display:inline-flex; align-items:center; gap:4px;
                          background:#fff0f0; color:#b42318; border:1.5px solid #f5c0bb;
+                         font-size:11px; padding:5px 8px; border-radius:8px;
+                         white-space:nowrap; font-weight:700; cursor:not-allowed; opacity:0.7;">
+              🚫 Visita
+            </span>
+            <!-- ── No Molestar: visita bloqueada ── -->
+            <span th:if="${!it.client.posibleOcupa and it.client.noMolestar}"
+                  title="No se puede programar visita: cliente No Molestar"
+                  style="display:inline-flex; align-items:center; gap:4px;
+                         background:#f3e5f5; color:#7b1fa2; border:1.5px solid #ce93d8;
                          font-size:11px; padding:5px 8px; border-radius:8px;
                          white-space:nowrap; font-weight:700; cursor:not-allowed; opacity:0.7;">
               🚫 Visita
@@ -804,6 +830,8 @@
     if (e.target.closest('.wa-link')) return;
     const el = e.target.closest('.copyable');
     if (!el) return;
+    /* Bloquear copia si fila es no-molestar */
+    if (el.closest('tr[data-no-molestar]')) return;
     const text = el.getAttribute('data-copy') || el.textContent.trim();
     try { await navigator.clipboard.writeText(text); }
     catch (_) {
@@ -833,7 +861,10 @@
   }
   function getAllEmailItems()         { return Array.from(document.querySelectorAll('.email-item')); }
   function getSelectableEmailItems() {
-    return getAllEmailItems().filter(cb => cb.closest('tr[data-excluido]') === null);
+    return getAllEmailItems().filter(cb =>
+      cb.closest('tr[data-excluido]') === null &&
+      cb.closest('tr[data-no-molestar]') === null   /* ← excluir no-molestar */
+    );
   }
   function syncSelectAll() {
     const sel    = getSelectableEmailItems();

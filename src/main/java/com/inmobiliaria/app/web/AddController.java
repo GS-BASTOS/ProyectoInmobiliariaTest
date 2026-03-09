@@ -29,12 +29,12 @@ public class AddController {
     private final ClientPropertyInteractionRepository interactionRepository;
 
     public AddController(ClientRepository clientRepository,
-                         ClientPhoneRepository clientPhoneRepository,
-                         PropertyRepository propertyRepository,
-                         ClientPropertyInteractionRepository interactionRepository) {
-        this.clientRepository = clientRepository;
+                          ClientPhoneRepository clientPhoneRepository,
+                          PropertyRepository propertyRepository,
+                          ClientPropertyInteractionRepository interactionRepository) {
+        this.clientRepository    = clientRepository;
         this.clientPhoneRepository = clientPhoneRepository;
-        this.propertyRepository = propertyRepository;
+        this.propertyRepository  = propertyRepository;
         this.interactionRepository = interactionRepository;
     }
 
@@ -93,6 +93,7 @@ public class AddController {
         client.setCompanyName(t(form.getCompanyName()));
         client.setGeneralNotes("");
         client.setSolviaCode(t(form.getSolviaCode()));
+        client.setNoMolestar(form.isNoMolestar());                   // ← NO MOLESTAR
 
         if (!p1.isBlank()) addPhone(client, p1, 1);
         if (!p2.isBlank()) addPhone(client, p2, 2);
@@ -147,14 +148,9 @@ public class AddController {
                 .stream()
                 .filter(p -> !p.isSold())
                 .map(p -> new PropertyCatalogDto(
-                        p.getId(),
-                        p.getPropertyCode(),
-                        p.getPropertyType(),
-                        p.getAddress(),
-                        p.getMunicipality(),
-                        p.isPreVendido(),
-                        p.isSold()
-                ))
+                        p.getId(), p.getPropertyCode(), p.getPropertyType(),
+                        p.getAddress(), p.getMunicipality(),
+                        p.isPreVendido(), p.isSold()))
                 .collect(Collectors.toList());
 
         model.addAttribute("catalogProperties", catalog);
