@@ -99,15 +99,11 @@ public class PublicController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
-        try {
-            emailService.enviarConsultaInmueble(
-                property.getPropertyCode(),
-                nombre, telefono, email, mensaje
-            );
-            return "redirect:/catalogo/" + id + "?enviado";
-        } catch (Exception e) {
-            return "redirect:/catalogo/" + id + "?error";
-        }
+        emailService.enviarConsultaInmueble(
+            property.getPropertyCode(),
+            nombre, telefono, email, mensaje
+        );
+        return "redirect:/catalogo/" + id + "?enviado";
     }
 
     // ── POST /contacto (formulario general home) ──────────
@@ -118,12 +114,9 @@ public class PublicController {
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String motivo,
             @RequestParam(required = false) String mensaje) {
-        try {
-            emailService.enviarConsultaGeneral(nombre, telefono, email, motivo, mensaje);
-            return "redirect:/#contacto?enviado";
-        } catch (Exception e) {
-            return "redirect:/#contacto?error";
-        }
+
+        emailService.enviarConsultaGeneral(nombre, telefono, email, motivo, mensaje);
+        return "redirect:/?enviado#contacto";
     }
 
     // ── Helper ────────────────────────────────────────────
