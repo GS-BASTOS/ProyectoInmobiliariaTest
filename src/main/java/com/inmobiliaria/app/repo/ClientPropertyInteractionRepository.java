@@ -123,6 +123,9 @@ public interface ClientPropertyInteractionRepository
 
     long countByPropertyId(Long propertyId);
 
+    // Usado para borrar interacciones antes de eliminar un inmueble
+    List<ClientPropertyInteraction> findByPropertyId(Long propertyId);
+
     List<ClientPropertyInteraction> findByProperty_IdOrderByContactDateDesc(Long propertyId);
 
     @Query("""

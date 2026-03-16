@@ -22,4 +22,7 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
     @EntityGraph(attributePaths = {"client", "property"})
     List<Visit> findByStatusAndVisitAtBetweenOrderByVisitAtAsc(
             VisitStatus status, LocalDateTime from, LocalDateTime to);
+
+    // Usado para borrar visitas antes de eliminar un inmueble
+    List<Visit> findByProperty_Id(Long propertyId);
 }

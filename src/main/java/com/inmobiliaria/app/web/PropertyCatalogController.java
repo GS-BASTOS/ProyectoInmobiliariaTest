@@ -1,8 +1,12 @@
 package com.inmobiliaria.app.web;
 
+import com.cloudinary.Cloudinary;
 import com.inmobiliaria.app.domain.Property;
+import com.inmobiliaria.app.domain.PropertyMedia;
 import com.inmobiliaria.app.repo.ClientPropertyInteractionRepository;
+import com.inmobiliaria.app.repo.PropertyMediaRepository;
 import com.inmobiliaria.app.repo.PropertyRepository;
+import com.inmobiliaria.app.repo.VisitRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -10,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Map;
@@ -20,11 +25,20 @@ public class PropertyCatalogController {
 
     private final PropertyRepository propertyRepository;
     private final ClientPropertyInteractionRepository interactionRepository;
+    private final PropertyMediaRepository propertyMediaRepository;
+    private final VisitRepository visitRepository;
+    private final Cloudinary cloudinary;
 
     public PropertyCatalogController(PropertyRepository propertyRepository,
-                                     ClientPropertyInteractionRepository interactionRepository) {
-        this.propertyRepository = propertyRepository;
-        this.interactionRepository = interactionRepository;
+                                     ClientPropertyInteractionRepository interactionRepository,
+                                     PropertyMediaRepository propertyMediaRepository,
+                                     VisitRepository visitRepository,
+                                     Cloudinary cloudinary) {
+        this.propertyRepository      = propertyRepository;
+        this.interactionRepository   = interactionRepository;
+        this.propertyMediaRepository = propertyMediaRepository;
+        this.visitRepository         = visitRepository;
+        this.cloudinary              = cloudinary;
     }
 
     private Map<Long, Long> buildInterestMap(List<Property> properties) {
@@ -124,8 +138,30 @@ public class PropertyCatalogController {
 
     // ── POST /inmuebles/{id}/eliminar ────────────────────────
     @PostMapping("/inmuebles/{id}/eliminar")
-    public String delete(@PathVariable Long id) {
-        propertyRepository.deleteById(id);
+    public String delete(@PathVariable Long id, RedirectAttributes ra) {
+        propertyRepository.findById(id).ifPresent(property -> {
+
+            // 1. Borrar archivos de Cloudinary y registros property_media
+            List<PropertyMedia> medias = propertyMediaRepository.findByPropertyId(id);
+            for (PropertyMedia m : medias) {
+                if (m.getCloudinaryPublicId() != null && !m.getCloudinaryPublicId().isBlank()) {
+                    try {
+                        cloudinary.uploader().destroy(m.getCloudinaryPublicId(), Map.of());
+                    } catch (Exception ignored) {}
+                }
+            }
+            propertyMediaRepository.deleteAll(medias);
+
+            // 2. Borrar visitas asociadas al inmueble
+            visitRepository.deleteAll(visitRepository.findByProperty_Id(id));
+
+            // 3. Borrar interacciones con clientes
+            interactionRepository.deleteAll(interactionRepository.findByPropertyId(id));
+
+            // 4. Borrar el inmueble
+            propertyRepository.delete(property);
+        });
+        ra.addFlashAttribute("successMsg", "Inmueble eliminado correctamente.");
         return "redirect:/inmuebles";
     }
 
@@ -137,7 +173,7 @@ public class PropertyCatalogController {
         Property p = propertyRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         p.setSold(sold);
-        if (sold) p.setPreVendido(false); // si se marca vendido, quitar pre-vendido
+        if (sold) p.setPreVendido(false);
         propertyRepository.save(p);
     }
 
@@ -149,12 +185,11 @@ public class PropertyCatalogController {
         Property p = propertyRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         p.setPreVendido(preVendido);
-        if (preVendido) p.setSold(false); // pre-vendido no puede estar también como vendido
+        if (preVendido) p.setSold(false);
         propertyRepository.save(p);
     }
 
     // ── GET /api/inmuebles ───────────────────────────────────
-    // Devuelve disponibles + pre-vendidos (excluye solo los vendidos definitivos)
     @GetMapping("/api/inmuebles")
     @ResponseBody
     public List<Property> apiList() {
