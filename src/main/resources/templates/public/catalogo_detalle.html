@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title th:text="${property.propertyCode} + ' · Solvia Store Bilbao'">Ficha</title>
+  <title th:text="${(property.propertyType != null ? property.propertyType : 'Inmueble') + ' · Solvia Store Bilbao'}">Ficha</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -22,7 +23,6 @@
     body { font-family: 'Inter', sans-serif; background: var(--bg2); color: var(--text); }
     a    { text-decoration: none; color: inherit; }
 
-    /* ══ NAV ══ */
     .pub-nav {
       position: sticky; top: 0; z-index: 100;
       background: rgba(26,31,46,.97); backdrop-filter: blur(12px);
@@ -37,62 +37,42 @@
     .pub-nav-cta { background: var(--blue) !important; color: #fff !important; font-weight: 700 !important; font-size: 13px !important; padding: 8px 18px; border-radius: 8px; transition: background .15s !important; }
     .pub-nav-cta:hover { background: var(--blue2) !important; }
 
-    /* ══ LAYOUT ══ */
     .detalle-wrap { max-width: 1100px; margin: 0 auto; padding: 48px 5% 80px; }
     .breadcrumb { font-size: 13px; color: var(--text3); margin-bottom: 28px; display: flex; align-items: center; gap: 8px; }
     .breadcrumb a { color: var(--text3); transition: color .15s; }
     .breadcrumb a:hover { color: var(--blue2); }
     .detalle-grid { display: grid; grid-template-columns: 1fr 360px; gap: 32px; align-items: start; }
 
-    /* ══ GALERÍA ══ */
     .gallery-main {
       width: 100%; aspect-ratio: 16/9;
       border-radius: 16px; overflow: hidden;
       background: var(--dark3); border: 1px solid rgba(106,171,220,.2);
       margin-bottom: 12px; position: relative;
     }
-    .gallery-main img#mainImg {
-      width: 100%; height: 100%;
-      object-fit: cover; display: block;
-      cursor: pointer; transition: opacity .2s;
-    }
+    .gallery-main img#mainImg { width: 100%; height: 100%; object-fit: cover; display: block; cursor: pointer; transition: opacity .2s; }
     .gallery-main img#mainImg:hover { opacity: .9; }
-    .gallery-main video#mainVideo {
-      width: 100%; height: 100%;
-      object-fit: contain; display: none;
-      background: #000;
-    }
-    .gallery-main-placeholder {
-      width: 100%; height: 100%;
-      display: flex; align-items: center; justify-content: center;
-      flex-direction: column; gap: 12px;
-    }
+    .gallery-main video#mainVideo { width: 100%; height: 100%; object-fit: contain; display: none; background: #000; }
+    .gallery-main-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; }
 
-    /* ══ THUMBS ══ */
     .gallery-thumbs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 0; }
-    .gallery-thumb {
-      width: 72px; height: 54px; border-radius: 8px; overflow: hidden;
-      cursor: pointer; border: 2px solid transparent;
-      transition: border-color .15s; flex-shrink: 0;
-      background: var(--dark3); position: relative;
-    }
+    .gallery-thumb { width: 72px; height: 54px; border-radius: 8px; overflow: hidden; cursor: pointer; border: 2px solid transparent; transition: border-color .15s; flex-shrink: 0; background: var(--dark3); position: relative; }
     .gallery-thumb.active { border-color: var(--blue); }
     .gallery-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .gallery-thumb-video .play-icon {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(0,0,0,.45);
-    }
+    .gallery-thumb-video .play-icon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.45); }
 
-    /* ══ DESCRIPCIÓN ══ */
-    .detalle-desc {
-      background: var(--dark2); border: 1px solid rgba(106,171,220,.15);
-      border-radius: 16px; padding: 28px; margin-top: 20px;
-    }
-    .detalle-desc h2 { font-size: 18px; font-weight: 800; margin-bottom: 14px; color: var(--text-inv); }
+    .detalle-desc { background: var(--dark2); border: 1px solid rgba(106,171,220,.15); border-radius: 16px; padding: 28px; margin-top: 20px; }
+    .detalle-desc h2 { font-size: 18px; font-weight: 800; margin-bottom: 14px; color: var(--text-inv); display: flex; align-items: center; gap: 8px; }
     .detalle-desc p  { font-size: 14px; color: var(--text-inv2); line-height: 1.8; white-space: pre-wrap; }
 
-    /* ══ SIDEBAR ══ */
+    .detalle-map-section {
+      background: var(--dark2); border: 1px solid rgba(106,171,220,.15);
+      border-radius: 16px; padding: 28px; margin-top: 20px;
+      display: none;
+    }
+    .detalle-map-section h2 { font-size: 18px; font-weight: 800; margin-bottom: 6px; color: var(--text-inv); display: flex; align-items: center; gap: 8px; }
+    .detalle-map-address { font-size: 13px; color: var(--text-inv2); margin-bottom: 16px; display: flex; align-items: center; gap: 6px; }
+    #prop-map { width: 100%; height: 320px; border-radius: 10px; overflow: hidden; border: 1px solid rgba(106,171,220,.2); }
+
     .detalle-sidebar { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 80px; }
     .sidebar-card { background: var(--dark2); border: 1px solid rgba(106,171,220,.18); border-radius: 16px; padding: 24px; }
     .sidebar-price { font-size: 36px; font-weight: 900; letter-spacing: -1px; color: var(--blue); margin-bottom: 6px; }
@@ -102,9 +82,8 @@
     .sidebar-info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(106,171,220,.1); font-size: 13px; }
     .sidebar-info-row:last-child { border-bottom: none; }
     .sidebar-info-label { color: var(--text-inv2); font-weight: 600; }
-    .sidebar-info-val   { color: var(--text-inv);  font-weight: 600; text-align: right; }
+    .sidebar-info-val   { color: var(--text-inv); font-weight: 600; text-align: right; }
 
-    /* ══ FORMULARIO CONTACTO ══ */
     .contact-card { background: var(--dark2); border: 1px solid rgba(106,171,220,.18); border-radius: 16px; padding: 24px; }
     .contact-card h3 { font-size: 16px; font-weight: 800; margin-bottom: 6px; color: var(--text-inv); }
     .contact-card p  { font-size: 13px; color: var(--text-inv2); margin-bottom: 18px; line-height: 1.5; }
@@ -123,11 +102,9 @@
     .contact-direct-link { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(106,171,220,.2); background: var(--dark3); font-size: 13px; font-weight: 600; color: var(--text-inv2); transition: border-color .15s, color .15s; }
     .contact-direct-link:hover { border-color: var(--blue); color: var(--blue); }
 
-    /* ══ ALERTAS ══ */
     .alert-ok { padding: 12px 16px; border-radius: 8px; background: rgba(106,171,220,.12); border: 1px solid rgba(106,171,220,.3); color: var(--blue); font-size: 13px; display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
     .alert-err { padding: 12px 16px; border-radius: 8px; background: rgba(180,35,24,.12); border: 1px solid rgba(180,35,24,.3); color: #f87171; font-size: 13px; display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
 
-    /* ══ LIGHTBOX ══ */
     #lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 9999; align-items: center; justify-content: center; }
     #lightbox.open { display: flex; }
     #lightboxImg { max-width: 92vw; max-height: 90vh; border-radius: 10px; animation: lbIn .15s ease; }
@@ -135,11 +112,9 @@
     #lightboxClose { position: absolute; top: 20px; right: 24px; cursor: pointer; opacity: .7; transition: opacity .15s; }
     #lightboxClose:hover { opacity: 1; }
 
-    /* ══ TOAST ══ */
     .copy-toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--dark2); border: 1px solid rgba(106,171,220,.35); color: var(--text-inv); font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: 999px; display: flex; align-items: center; gap: 8px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 99999; }
     .copy-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    /* ══ FOOTER ══ */
     .pub-footer { background: var(--dark); border-top: 1px solid rgba(106,171,220,.12); padding: 32px 5%; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
     .pub-footer-brand { font-size: 15px; font-weight: 800; color: var(--text-inv); }
     .pub-footer p     { font-size: 12px; color: var(--text-inv2); }
@@ -155,19 +130,16 @@
 </head>
 <body>
 
-<!-- ══ LIGHTBOX ══ -->
 <div id="lightbox">
   <div id="lightboxClose">
     <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24"
          fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="18" y1="6" x2="6" y2="18"/>
-      <line x1="6" y1="6" x2="18" y2="18"/>
+      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
     </svg>
   </div>
   <img id="lightboxImg" src="" alt="Foto inmueble"/>
 </div>
 
-<!-- ══ NAV ══ -->
 <nav class="pub-nav">
   <a class="pub-nav-brand" href="/">
     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
@@ -188,23 +160,21 @@
 
 <div class="detalle-wrap">
   <div class="breadcrumb">
-    <a href="/">Inicio</a>
-    <span>›</span>
-    <a href="/catalogo">Catálogo</a>
-    <span>›</span>
-    <span th:text="${property.propertyCode}">Código</span>
+    <a href="/">Inicio</a><span>›</span>
+    <a href="/catalogo">Catálogo</a><span>›</span>
+    <span th:text="${property.propertyType != null and !#strings.isEmpty(property.propertyType)
+                     ? property.propertyType
+                     : 'Inmueble'}">Inmueble</span>
   </div>
 
   <div class="detalle-grid">
 
-    <!-- ══ COLUMNA IZQUIERDA ══ -->
     <div>
-
-      <!-- ÁREA PRINCIPAL -->
+      <!-- GALERÍA PRINCIPAL -->
       <div class="gallery-main" id="galleryMain">
         <img th:if="${firstImage != null}"
              th:src="${firstImage.cloudinaryUrl}"
-             th:alt="${property.propertyCode}"
+             alt="Foto del inmueble"
              id="mainImg"/>
         <div th:if="${firstImage == null and firstVideo == null}" class="gallery-main-placeholder">
           <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24"
@@ -216,28 +186,24 @@
           </svg>
           <span style="font-size:13px; color:var(--text-inv2);">Sin fotos disponibles</span>
         </div>
-        <!-- Vídeo principal (oculto hasta que se seleccione su thumb) -->
         <video id="mainVideo" controls preload="metadata"
                style="display:none; width:100%; height:100%; object-fit:contain; background:#000;">
           <source id="mainVideoSrc" src="" type="video/mp4"/>
         </video>
-        <!-- Auto-init si solo hay vídeo -->
         <div th:if="${firstImage == null and firstVideo != null}"
              th:attr="data-autovideo=${firstVideo.cloudinaryUrl}"
              id="autoVideoInit"></div>
       </div>
 
-      <!-- THUMBS: imágenes + vídeos juntos -->
+      <!-- THUMBS -->
       <div class="gallery-thumbs" id="galleryThumbs">
-
         <div th:each="m, idx : ${mediaList}"
              th:if="${m.mediaType == 'IMAGE'}"
              class="gallery-thumb"
              th:classappend="${firstImage != null and idx.index == 0} ? ' active' : ''"
              th:attr="data-type='image', data-src=${m.cloudinaryUrl}">
-          <img th:src="${m.cloudinaryUrl}" th:alt="${m.originalName}"/>
+          <img th:src="${m.cloudinaryUrl}" alt="Foto del inmueble"/>
         </div>
-
         <div th:each="m : ${mediaList}"
              th:if="${m.mediaType == 'VIDEO'}"
              class="gallery-thumb gallery-thumb-video"
@@ -250,18 +216,56 @@
             </svg>
           </div>
         </div>
-
       </div>
 
+      <!-- DESCRIPCIÓN -->
       <div class="detalle-desc"
            th:if="${property.description != null and !#strings.isEmpty(property.description)}">
-        <h2>📄 Descripción</h2>
+        <h2>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+               fill="none" stroke="var(--blue)" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          Descripción
+        </h2>
         <p th:text="${property.description}"></p>
       </div>
 
+      <!-- MAPA -->
+      <div class="detalle-map-section" id="mapSection"
+           th:attr="data-address=${property.address != null
+                                   ? property.address
+                                     + (property.municipality != null ? ', ' + property.municipality : '')
+                                     + (property.province != null ? ', ' + property.province : '')
+                                   : ''}">
+        <h2>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+               fill="none" stroke="var(--blue)" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          Ubicación
+        </h2>
+        <div class="detalle-map-address" id="mapAddress">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          <span id="mapAddressText"></span>
+        </div>
+        <div id="prop-map"></div>
+      </div>
     </div>
 
-    <!-- ══ COLUMNA DERECHA ══ -->
+    <!-- SIDEBAR -->
     <div class="detalle-sidebar">
       <div class="sidebar-card">
         <div class="sidebar-badge">
@@ -274,10 +278,6 @@
              th:text="${#numbers.formatInteger(property.precio, 3, 'POINT') + ' €'}">150.000 €</div>
         <div th:if="${property.precio == null}" class="sidebar-price no-price">Consultar precio</div>
         <div class="sidebar-divider"></div>
-        <div class="sidebar-info-row">
-          <span class="sidebar-info-label">Referencia</span>
-          <span class="sidebar-info-val" th:text="${property.propertyCode}">—</span>
-        </div>
         <div class="sidebar-info-row"
              th:if="${property.propertyType != null and !#strings.isEmpty(property.propertyType)}">
           <span class="sidebar-info-label">Tipo</span>
@@ -357,7 +357,6 @@
   </div>
 </div>
 
-<!-- ══ FOOTER ══ -->
 <footer class="pub-footer">
   <div class="pub-footer-brand">Solvia Store Bilbao</div>
   <p>© 2026 Solvia Store Bilbao · C/ General Eguía 29, 48013 Bilbao · Todos los derechos reservados</p>
@@ -374,14 +373,12 @@
 
 <script>
 (function () {
-
   const mainImg      = document.getElementById('mainImg');
   const mainVideo    = document.getElementById('mainVideo');
   const mainVideoSrc = document.getElementById('mainVideoSrc');
   const thumbs       = document.querySelectorAll('.gallery-thumb');
   const galleryMain  = document.getElementById('galleryMain');
 
-  // Si solo hay vídeo, mostrarlo automáticamente
   const autoInit = document.getElementById('autoVideoInit');
   if (autoInit) {
     const url = autoInit.getAttribute('data-autovideo');
@@ -392,14 +389,9 @@
     if (mainVideo) { mainVideo.pause(); mainVideo.style.display = 'none'; }
     if (mainImg)   { mainImg.src = src; mainImg.style.display = 'block'; }
   }
-
   function showVideo(src) {
     if (mainImg)   { mainImg.style.display = 'none'; }
-    if (mainVideo) {
-      mainVideoSrc.src = src;
-      mainVideo.load();
-      mainVideo.style.display = 'block';
-    }
+    if (mainVideo) { mainVideoSrc.src = src; mainVideo.load(); mainVideo.style.display = 'block'; }
   }
 
   thumbs.forEach(thumb => {
@@ -408,18 +400,15 @@
       thumb.classList.add('active');
       const type = thumb.getAttribute('data-type');
       const src  = thumb.getAttribute('data-src');
-      if (type === 'video') showVideo(src);
-      else                  showImage(src);
+      if (type === 'video') showVideo(src); else showImage(src);
     });
   });
 
-  // Lightbox solo para imágenes
   const lightbox      = document.getElementById('lightbox');
   const lightboxImg   = document.getElementById('lightboxImg');
   const lightboxClose = document.getElementById('lightboxClose');
-
   if (galleryMain) {
-    galleryMain.addEventListener('click', (e) => {
+    galleryMain.addEventListener('click', () => {
       if (mainVideo && mainVideo.style.display !== 'none') return;
       if (mainImg && mainImg.style.display !== 'none' && mainImg.src) {
         lightboxImg.src = mainImg.src;
@@ -427,25 +416,19 @@
       }
     });
   }
-
   function closeLb() { lightbox.classList.remove('open'); lightboxImg.src = ''; }
   if (lightboxClose) lightboxClose.addEventListener('click', closeLb);
   lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLb(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
 
-  // Copy email
   const toast = document.createElement('div');
   toast.className = 'copy-toast';
-  toast.innerHTML = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
-         fill="none" stroke="var(--blue)" stroke-width="2.5"
-         stroke-linecap="round" stroke-linejoin="round">
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-      <polyline points="22 4 12 14.01 9 11.01"/>
-    </svg>
+  toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+    fill="none" stroke="var(--blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+    <polyline points="22 4 12 14.01 9 11.01"/></svg>
     Email copiado al portapapeles`;
   document.body.appendChild(toast);
-
   let toastTimer;
   function showToast() {
     clearTimeout(toastTimer);
@@ -469,7 +452,56 @@
       copyEmail(this.dataset.email || this.href.replace('mailto:', ''));
     });
   });
+})();
+</script>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function () {
+  const section = document.getElementById('mapSection');
+  if (!section) return;
+
+  const address = section.getAttribute('data-address');
+  if (!address || address.trim() === '') return;
+
+  fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(address),
+        { headers: { 'Accept-Language': 'es' } })
+    .then(r => r.json())
+    .then(results => {
+      if (!results || results.length === 0) return;
+
+      const lat = parseFloat(results[0].lat);
+      const lon = parseFloat(results[0].lon);
+
+      section.style.display = 'block';
+      const addrText = document.getElementById('mapAddressText');
+      if (addrText) addrText.textContent = address;
+
+      const map = L.map('prop-map', { scrollWheelZoom: false }).setView([lat, lon], 16);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19
+      }).addTo(map);
+
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="
+          width:36px; height:36px;
+          background:var(--blue); border:3px solid #fff;
+          border-radius:50% 50% 50% 0; transform:rotate(-45deg);
+          box-shadow:0 4px 12px rgba(0,0,0,.35);
+        "></div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 36]
+      });
+
+      L.marker([lat, lon], { icon })
+        .addTo(map)
+        .bindPopup(`<strong style="font-size:13px;">${address}</strong>`)
+        .openPopup();
+    })
+    .catch(() => {});
 })();
 </script>
 

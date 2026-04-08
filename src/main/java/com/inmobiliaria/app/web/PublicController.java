@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class PublicController {
@@ -34,7 +35,6 @@ public class PublicController {
         List<Property> destacados = propertyRepository
                 .findByPublicadoTrueAndSoldFalseOrderByIdDesc()
                 .stream().limit(3).toList();
-
         asignarPortadas(destacados);
         model.addAttribute("destacados", destacados);
         return "public/home";
@@ -42,22 +42,109 @@ public class PublicController {
 
     // ── GET /catalogo ─────────────────────────────────────
     @GetMapping("/catalogo")
-    public String catalogo(@RequestParam(required = false) String tipo,
-                           Model model) {
+    public String catalogo(
+            @RequestParam(required = false) String tipo,
+            @RequestParam(required = false) Integer precioMin,
+            @RequestParam(required = false) Integer precioMax,
+            @RequestParam(required = false) String municipio,
+            @RequestParam(required = false) String provincia,
+            @RequestParam(required = false) String estado,   // "disponible" | "prevendido"
+            @RequestParam(required = false) String orden,    // "precio_asc" | "precio_desc" | "reciente"
+            Model model) {
 
-        List<Property> propiedades = (tipo != null && !tipo.isBlank())
-                ? propertyRepository
-                    .findByPublicadoTrueAndSoldFalseAndPropertyTypeOrderByIdDesc(tipo)
-                : propertyRepository
-                    .findByPublicadoTrueAndSoldFalseOrderByIdDesc();
+        // 1. Carga base: solo publicados y no vendidos definitivamente
+        List<Property> propiedades = propertyRepository
+                .findByPublicadoTrueAndSoldFalseOrderByIdDesc();
 
+        // 2. Filtros en memoria (evita N queries extra)
+        propiedades = propiedades.stream()
+
+            // Tipo de inmueble
+            .filter(p -> tipo == null || tipo.isBlank()
+                    || tipo.equalsIgnoreCase(p.getPropertyType()))
+
+            // Precio mínimo
+            .filter(p -> precioMin == null
+                    || (p.getPrecio() != null && p.getPrecio() >= precioMin))
+
+            // Precio máximo
+            .filter(p -> precioMax == null
+                    || (p.getPrecio() != null && p.getPrecio() <= precioMax))
+
+            // Municipio / ciudad (contains, case-insensitive)
+            .filter(p -> municipio == null || municipio.isBlank()
+                    || (p.getMunicipality() != null
+                        && p.getMunicipality().toLowerCase()
+                           .contains(municipio.toLowerCase().trim())))
+
+            // Provincia
+            .filter(p -> provincia == null || provincia.isBlank()
+                    || (p.getProvince() != null
+                        && p.getProvince().toLowerCase()
+                           .contains(provincia.toLowerCase().trim())))
+
+            // Estado: prevendido o disponible
+            .filter(p -> {
+                if ("prevendido".equalsIgnoreCase(estado)) return p.isPreVendido();
+                if ("disponible".equalsIgnoreCase(estado)) return !p.isPreVendido();
+                return true; // sin filtro = todos
+            })
+
+            .collect(Collectors.toList());
+
+        // 3. Ordenación
+        if ("precio_asc".equals(orden)) {
+            propiedades.sort((a, b) -> {
+                if (a.getPrecio() == null) return 1;
+                if (b.getPrecio() == null) return -1;
+                return a.getPrecio().compareTo(b.getPrecio());
+            });
+        } else if ("precio_desc".equals(orden)) {
+            propiedades.sort((a, b) -> {
+                if (a.getPrecio() == null) return 1;
+                if (b.getPrecio() == null) return -1;
+                return b.getPrecio().compareTo(a.getPrecio());
+            });
+        }
+        // "reciente" ya viene ordenado por id desc del repositorio
+
+        // 4. Portadas
         asignarPortadas(propiedades);
 
-        List<String> tipos = propertyRepository.findTiposPublicados();
+        // 5. Listas para los selects del filtro
+        List<String> tipos      = propertyRepository.findTiposPublicados();
+        List<String> municipios = propiedades.stream()
+                .map(Property::getMunicipality)
+                .filter(m -> m != null && !m.isBlank())
+                .distinct().sorted().collect(Collectors.toList());
+        List<String> provincias = propiedades.stream()
+                .map(Property::getProvince)
+                .filter(p -> p != null && !p.isBlank())
+                .distinct().sorted().collect(Collectors.toList());
 
-        model.addAttribute("propiedades", propiedades);
-        model.addAttribute("tipos",       tipos);
-        model.addAttribute("tipoActivo",  tipo);
+        // Precio máximo disponible para el slider
+        int maxPrecioDisponible = propertyRepository
+                .findByPublicadoTrueAndSoldFalseOrderByIdDesc()
+                .stream()
+                .filter(p -> p.getPrecio() != null)
+                .mapToInt(Property::getPrecio)
+                .max().orElse(1_000_000);
+
+        model.addAttribute("propiedades",          propiedades);
+        model.addAttribute("tipos",                tipos);
+        model.addAttribute("municipios",           municipios);
+        model.addAttribute("provincias",           provincias);
+        model.addAttribute("maxPrecioDisponible",  maxPrecioDisponible);
+
+        // Devolver los filtros activos para repintar el formulario
+        model.addAttribute("tipoActivo",    tipo);
+        model.addAttribute("precioMin",     precioMin);
+        model.addAttribute("precioMax",     precioMax);
+        model.addAttribute("municipioActivo", municipio);
+        model.addAttribute("provinciaActiva", provincia);
+        model.addAttribute("estadoActivo",  estado);
+        model.addAttribute("ordenActivo",   orden);
+
         return "public/catalogo";
     }
 
@@ -75,19 +162,16 @@ public class PublicController {
 
         PropertyMedia firstImage = media.stream()
                 .filter(m -> "IMAGE".equals(m.getMediaType()))
-                .findFirst()
-                .orElse(null);
+                .findFirst().orElse(null);
 
-        // ── NUEVO: primera imagen de vídeo para el caso sin imágenes ──
         PropertyMedia firstVideo = media.stream()
                 .filter(m -> "VIDEO".equals(m.getMediaType()))
-                .findFirst()
-                .orElse(null);
+                .findFirst().orElse(null);
 
         model.addAttribute("property",   property);
         model.addAttribute("mediaList",  media);
         model.addAttribute("firstImage", firstImage);
-        model.addAttribute("firstVideo", firstVideo);  // ← añadido
+        model.addAttribute("firstVideo", firstVideo);
         return "public/catalogo_detalle";
     }
 
@@ -107,9 +191,7 @@ public class PublicController {
         }
 
         emailService.enviarConsultaInmueble(
-            property.getPropertyCode(),
-            nombre, telefono, email, mensaje
-        );
+            property.getPropertyCode(), nombre, telefono, email, mensaje);
         return "redirect:/catalogo/" + id + "?enviado";
     }
 

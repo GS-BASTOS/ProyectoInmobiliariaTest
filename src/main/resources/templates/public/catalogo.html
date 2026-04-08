@@ -6,32 +6,26 @@
   <title>Catálogo · Solvia Store Bilbao</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-        rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #ffffff;
-      --bg2:       #f7f5f0;
-      --bg3:       #ede9e1;
-      --dark:      #1a1f2e;
-      --dark2:     #252c40;
-      --dark3:     #2e3650;
-      --beige:     #f2ede4;
-      --beige2:    #e8e1d4;
-      --beige3:    #d8cfc0;
-      --blue:      #6aabdc;
-      --blue2:     #4d95cc;
-      --blue3:     #3580b8;
-      --blue-lt:   #ddeef9;
-      --text:      #1a1f2e;
-      --text2:     #4a5068;
-      --text3:     #8a90a8;
-      --text-inv:  #f2ede4;
-      --text-inv2: #a8b0c8;
-      --border:    #ddd8ce;
-      --border2:   #cec8bc;
+      --dark:     #1a1f2e;
+      --dark2:    #252c40;
+      --dark3:    #2e3650;
+      --blue:     #6aabdc;
+      --blue2:    #4d95cc;
+      --blue3:    #3580b8;
+      --blue-dim: rgba(106,171,220,.12);
+      --bg:       #f4f5f8;
+      --text:     #1a1f2e;
+      --text2:    #4a5068;
+      --text3:    #8a90a8;
+      --text-inv: #f2ede4;
+      --tinv2:    #a8b0c8;
+      --green:    #22c55e;
+      --orange:   #f97316;
     }
 
     html { scroll-behavior: smooth; }
@@ -40,9 +34,9 @@
 
     /* ══ NAV ══ */
     .pub-nav {
-      position: sticky; top: 0; z-index: 100;
+      position: sticky; top: 0; z-index: 200;
       background: rgba(26,31,46,.97); backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(106,171,220,.15);
+      border-bottom: 1px solid var(--blue-dim);
       padding: 0 5%; display: flex; align-items: center;
       justify-content: space-between; height: 64px;
     }
@@ -51,11 +45,8 @@
       font-size: 17px; font-weight: 800; color: var(--text-inv);
     }
     .pub-nav-links { display: flex; align-items: center; gap: 28px; }
-    .pub-nav-links a {
-      font-size: 13px; font-weight: 500; color: var(--text-inv2); transition: color .15s;
-    }
-    .pub-nav-links a:hover,
-    .pub-nav-links a.active { color: var(--text-inv); }
+    .pub-nav-links a { font-size: 13px; font-weight: 500; color: var(--tinv2); transition: color .15s; }
+    .pub-nav-links a:hover, .pub-nav-links a.active { color: var(--text-inv); }
     .pub-nav-cta {
       background: var(--blue) !important; color: #fff !important;
       font-weight: 700 !important; font-size: 13px !important;
@@ -63,122 +54,231 @@
     }
     .pub-nav-cta:hover { background: var(--blue2) !important; }
 
-    /* ══ HERO CATÁLOGO (oscuro) ══ */
+    /* ══ HERO ══ */
     .cat-hero {
-      padding: 64px 5% 48px;
-      background: var(--dark);
-      border-bottom: 1px solid rgba(106,171,220,.12);
+      padding: 40px 5% 32px; background: var(--dark);
+      border-bottom: 1px solid var(--blue-dim);
       position: relative; overflow: hidden;
     }
     .cat-hero::before {
       content: ''; position: absolute; inset: 0;
-      background: radial-gradient(ellipse 60% 80% at 0% 50%,
-                  rgba(106,171,220,.1) 0%, transparent 70%);
+      background: radial-gradient(ellipse 60% 80% at 0% 50%, rgba(106,171,220,.1) 0%, transparent 70%);
       pointer-events: none;
     }
     .cat-hero-eyebrow {
       font-size: 11px; font-weight: 700; letter-spacing: 2px;
-      text-transform: uppercase; color: var(--blue); margin-bottom: 12px;
+      text-transform: uppercase; color: var(--blue); margin-bottom: 8px;
     }
     .cat-hero h1 {
-      font-size: clamp(32px, 5vw, 52px); font-weight: 900;
-      letter-spacing: -1.5px; margin-bottom: 12px; color: var(--text-inv);
+      font-size: clamp(26px, 4vw, 42px); font-weight: 900;
+      letter-spacing: -1px; color: var(--text-inv); margin-bottom: 6px;
     }
     .cat-hero h1 span { color: var(--blue); }
-    .cat-hero p { font-size: 16px; color: var(--text-inv2); max-width: 500px; }
+    .cat-hero p { font-size: 14px; color: var(--tinv2); }
 
-    /* ══ FILTROS ══ */
-    .cat-filters {
-      padding: 18px 5%;
-      background: var(--dark2);
-      border-bottom: 1px solid rgba(106,171,220,.12);
-      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    /* ══ BARRA DE FILTROS ══ */
+    .filter-shell {
+      background: #ffffff;
+      border-bottom: 2px solid #e2e5ed;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
     }
-    .filter-label {
+
+    /* Fila 1 — Pills de tipo */
+    .filter-row-tipo {
+      padding: 14px 5%;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      border-bottom: 1px solid #eef0f4;
+    }
+    .tipo-label {
       font-size: 11px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 1px; color: var(--text-inv2); margin-right: 4px;
+      letter-spacing: 1px; color: var(--text3); margin-right: 4px; white-space: nowrap;
     }
-    .filter-pill {
+    .tipo-pill {
       padding: 6px 16px; border-radius: 999px; font-size: 12px; font-weight: 600;
-      border: 1px solid rgba(106,171,220,.25);
-      background: transparent; color: var(--text-inv2);
-      cursor: pointer; transition: all .15s; text-decoration: none;
+      border: 1.5px solid #d8dce8;
+      background: transparent; color: var(--text2);
+      cursor: pointer; white-space: nowrap; transition: all .15s; text-decoration: none;
     }
-    .filter-pill:hover { border-color: var(--blue); color: var(--blue); }
-    .filter-pill.active {
-      background: var(--blue); color: #fff; border-color: var(--blue);
+    .tipo-pill:hover { border-color: var(--blue2); color: var(--blue2); background: #f0f7fd; }
+    .tipo-pill.active {
+      background: var(--dark); color: #fff; border-color: var(--dark);
     }
 
-    /* ══ BODY ══ */
-    .cat-body { padding: 48px 5%; background: var(--bg2); min-height: 60vh; }
-    .cat-count { font-size: 13px; color: var(--text3); margin-bottom: 28px; }
-    .cat-count strong { color: var(--text2); }
-    .cat-count .tipo-tag { color: var(--blue2); }
+    /* Fila 2 — Controles avanzados */
+    .filter-row-controls {
+      padding: 14px 5%;
+      display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap;
+    }
+
+    /* Grupo de control */
+    .fc-group { display: flex; flex-direction: column; gap: 5px; }
+    .fc-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--text3);
+    }
+
+    /* Input / Select de filtro */
+    .fc-input, .fc-select {
+      background: #f7f8fb;
+      border: 1.5px solid #d8dce8;
+      border-radius: 8px;
+      color: #1a1f2e;          /* negro sólido */
+      font-size: 13px; font-weight: 500;
+      padding: 9px 12px;
+      font-family: inherit; outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      min-width: 140px;
+    }
+    .fc-input::placeholder { color: var(--text3); }
+    .fc-input:focus, .fc-select:focus {
+      border-color: var(--blue2);
+      box-shadow: 0 0 0 3px rgba(77,149,204,.15);
+      background: #fff;
+    }
+    .fc-select { cursor: pointer; padding-right: 32px; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a90a8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+    }
+    /* Forzar color negro en opciones */
+    .fc-select option { color: #1a1f2e; background: #fff; }
+
+    /* Precio — dos inputs lado a lado */
+    .fc-price-row { display: flex; align-items: center; gap: 6px; }
+    .fc-price-row .fc-input { min-width: 110px; max-width: 130px; }
+    .fc-price-sep { font-size: 13px; color: var(--text3); font-weight: 500; }
+
+    /* Botón aplicar */
+    .fc-spacer { flex: 1; }
+    .btn-aplicar {
+      background: var(--dark); color: #fff; border: none;
+      padding: 10px 28px; border-radius: 8px; font-size: 13px; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: background .15s;
+      white-space: nowrap; align-self: flex-end;
+    }
+    .btn-aplicar:hover { background: var(--dark2); }
+    .btn-reset {
+      background: transparent; color: #e05555;
+      border: 1.5px solid rgba(224,85,85,.3);
+      padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: all .15s;
+      white-space: nowrap; align-self: flex-end;
+    }
+    .btn-reset:hover { background: rgba(224,85,85,.07); border-color: rgba(224,85,85,.6); }
+
+    /* ══ TAGS FILTROS ACTIVOS ══ */
+    .active-filters {
+      background: #f0f7fd; padding: 10px 5%;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      border-bottom: 1px solid #ddeef9;
+    }
+    .active-filters:empty { display: none; }
+    .af-tag {
+      display: flex; align-items: center; gap: 6px;
+      background: #fff; border: 1.5px solid var(--blue2);
+      border-radius: 999px; padding: 4px 12px;
+      font-size: 12px; font-weight: 600; color: var(--blue3);
+    }
+    .af-tag a { color: inherit; font-size: 15px; line-height: 1; opacity: .6; transition: opacity .1s; }
+    .af-tag a:hover { opacity: 1; }
+    .af-clear-all {
+      font-size: 12px; font-weight: 600; color: #e05555;
+      cursor: pointer; background: none; border: none; font-family: inherit;
+    }
+
+    /* ══ ÁREA DE RESULTADOS ══ */
+    .cat-body { max-width: 1300px; margin: 0 auto; padding: 32px 5% 64px; }
+    .results-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px; flex-wrap: wrap; gap: 10px;
+    }
+    .results-count { font-size: 14px; color: var(--text2); }
+    .results-count strong { color: var(--text); font-size: 20px; font-weight: 800; }
+    .results-count .tipo-tag { color: var(--blue2); }
 
     /* ══ GRID ══ */
-    .prop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .prop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
     .prop-card {
-      background: var(--dark3); border: 1px solid rgba(106,171,220,.18);
-      border-radius: 16px; overflow: hidden;
-      transition: transform .2s, box-shadow .2s, border-color .2s;
-      display: flex; flex-direction: column;
+      background: #fff; border: 1.5px solid #e2e5ed;
+      border-radius: 14px; overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+      display: flex; flex-direction: column; text-decoration: none;
     }
-    .prop-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 40px rgba(0,0,0,.3);
-      border-color: rgba(106,171,220,.45);
-    }
-    .prop-card-img { width: 100%; height: 210px; object-fit: cover; display: block; }
+    .prop-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,.1); }
+
+    .prop-card-img-wrap { position: relative; }
+    .prop-card-img { width: 100%; height: 195px; object-fit: cover; display: block; }
     .prop-card-img-placeholder {
-      width: 100%; height: 210px; background: rgba(255,255,255,.04);
+      width: 100%; height: 195px; background: #f0f2f6;
       display: flex; align-items: center; justify-content: center;
     }
-    .prop-card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+    .prop-card-badge {
+      position: absolute; top: 10px; left: 10px;
+      font-size: 10px; font-weight: 700; letter-spacing: 1px;
+      text-transform: uppercase; padding: 4px 10px; border-radius: 999px;
+    }
+    .badge-disponible { background: rgba(34,197,94,.15); color: var(--green); border: 1px solid rgba(34,197,94,.4); }
+    .badge-prevendido { background: rgba(249,115,22,.15); color: var(--orange); border: 1px solid rgba(249,115,22,.4); }
+
+    .prop-card-body { padding: 16px 18px 18px; flex: 1; display: flex; flex-direction: column; }
     .prop-card-type {
       font-size: 11px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 1px; color: var(--blue); margin-bottom: 6px;
+      letter-spacing: 1px; color: var(--blue2); margin-bottom: 3px;
     }
-    .prop-card-code {
-      font-size: 20px; font-weight: 800; color: var(--text-inv);
-      margin-bottom: 6px; letter-spacing: -0.5px;
-    }
+    .prop-card-code { font-size: 17px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
     .prop-card-location {
-      font-size: 13px; color: var(--text-inv2);
-      display: flex; align-items: center; gap: 5px; margin-bottom: 16px;
+      font-size: 12px; color: var(--text3);
+      display: flex; align-items: center; gap: 4px; margin-bottom: 14px;
     }
-    .prop-card-price {
-      font-size: 24px; font-weight: 900; color: var(--blue);
-      margin-top: auto; padding-top: 16px;
-      border-top: 1px solid rgba(106,171,220,.18);
+    .prop-card-footer {
+      margin-top: auto; padding-top: 14px;
+      border-top: 1px solid #eef0f4;
+      display: flex; align-items: center; justify-content: space-between;
     }
-    .prop-card-price.no-price { font-size: 14px; color: var(--text-inv2); font-weight: 500; }
+    .prop-card-price { font-size: 20px; font-weight: 900; color: var(--blue3); }
+    .prop-card-price.no-price { font-size: 13px; color: var(--text3); font-weight: 500; }
     .prop-card-cta {
-      display: inline-flex; align-items: center; gap: 6px;
-      margin-top: 14px; font-size: 13px; font-weight: 600;
-      color: var(--blue); transition: gap .15s;
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; font-weight: 600; color: var(--blue2); transition: gap .15s;
     }
-    .prop-card-cta:hover { gap: 10px; }
+    .prop-card-cta:hover { gap: 9px; }
 
     /* ══ EMPTY STATE ══ */
     .cat-empty { text-align: center; padding: 80px 20px; color: var(--text3); }
-    .cat-empty h2 { font-size: 22px; font-weight: 700; color: var(--text2); margin-bottom: 10px; }
-    .cat-empty p  { font-size: 14px; }
+    .cat-empty h2 { font-size: 20px; font-weight: 700; color: var(--text2); margin-bottom: 8px; }
+    .cat-empty p  { font-size: 14px; margin-bottom: 20px; }
 
     /* ══ FOOTER ══ */
     .pub-footer {
-      background: var(--dark); border-top: 1px solid rgba(106,171,220,.12);
-      padding: 32px 5%; display: flex; align-items: center;
-      justify-content: space-between; flex-wrap: wrap; gap: 16px;
+      background: var(--dark); border-top: 1px solid var(--blue-dim);
+      padding: 28px 5%; display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 14px;
     }
     .pub-footer-brand { font-size: 15px; font-weight: 800; color: var(--text-inv); }
-    .pub-footer p     { font-size: 12px; color: var(--text-inv2); }
+    .pub-footer p     { font-size: 12px; color: var(--tinv2); }
     .pub-footer-login {
-      font-size: 12px; color: var(--text-inv2);
+      font-size: 12px; color: var(--tinv2);
       display: flex; align-items: center; gap: 6px; transition: color .15s;
     }
     .pub-footer-login:hover { color: var(--blue); }
 
-    @media (max-width: 640px) { .pub-nav-links { display: none; } }
+    /* ══ RESPONSIVE ══ */
+    @media (max-width: 768px) {
+      .pub-nav-links { display: none; }
+      .filter-row-controls { gap: 12px; }
+      .fc-group { width: 100%; }
+      .fc-input, .fc-select { min-width: unset; width: 100%; }
+      .fc-price-row .fc-input { max-width: unset; flex: 1; }
+      .btn-aplicar, .btn-reset { width: 100%; justify-content: center; }
+    }
+    @media (max-width: 480px) {
+      .prop-grid { grid-template-columns: 1fr; }
+      .cat-body  { padding: 24px 4% 48px; }
+    }
   </style>
 </head>
 <body>
@@ -187,8 +287,7 @@
 <nav class="pub-nav">
   <a class="pub-nav-brand" href="/">
     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
-         fill="none" stroke="var(--blue)" stroke-width="2"
-         stroke-linecap="round" stroke-linejoin="round">
+         fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
       <polyline points="9 21 9 12 15 12 15 21"/>
     </svg>
@@ -211,99 +310,244 @@
 </div>
 
 <!-- ══ FILTROS ══ -->
-<div class="cat-filters" th:if="${!#lists.isEmpty(tipos)}">
-  <span class="filter-label">Tipo:</span>
-  <a href="/catalogo"
-     th:classappend="${tipoActivo == null} ? ' active' : ''"
-     class="filter-pill">Todos</a>
-  <a th:each="t : ${tipos}"
-     th:href="@{/catalogo(tipo=${t})}"
-     th:text="${t}"
-     th:classappend="${tipoActivo == t} ? ' active' : ''"
-     class="filter-pill">Piso</a>
+<form id="filter-form" method="get" action="/catalogo">
+  <div class="filter-shell">
+
+    <!-- FILA 1: TIPO -->
+    <div class="filter-row-tipo" th:if="${tipos != null and !#lists.isEmpty(tipos)}">
+      <span class="tipo-label">Tipo:</span>
+      <a href="/catalogo"
+         th:classappend="${tipoActivo == null or #strings.isEmpty(tipoActivo)} ? ' active' : ''"
+         class="tipo-pill">Todos</a>
+      <a th:each="t : ${tipos}"
+         th:href="@{/catalogo(tipo=${t})}"
+         th:text="${t}"
+         th:classappend="${tipoActivo != null and tipoActivo == t} ? ' active' : ''"
+         class="tipo-pill">Piso</a>
+    </div>
+
+    <!-- FILA 2: PRECIO · MUNICIPIO · ORDEN -->
+    <div class="filter-row-controls">
+
+      <!-- Precio -->
+      <div class="fc-group">
+        <span class="fc-label">Precio</span>
+        <div class="fc-price-row">
+          <input type="number" name="precioMin" class="fc-input"
+                 placeholder="Mín €" min="0" step="5000"
+                 th:value="${precioMin}"/>
+          <span class="fc-price-sep">–</span>
+          <input type="number" name="precioMax" class="fc-input"
+                 placeholder="Máx €" min="0" step="5000"
+                 th:value="${precioMax}"/>
+        </div>
+      </div>
+
+      <!-- Municipio -->
+      <div class="fc-group">
+        <span class="fc-label">Ciudad / Municipio</span>
+        <th:block th:if="${municipios != null and !#lists.isEmpty(municipios)}">
+          <select name="municipio" class="fc-select">
+            <option value="" style="color:#1a1f2e;">Todos los municipios</option>
+            <option th:each="m : ${municipios}"
+                    th:value="${m}" th:text="${m}"
+                    th:selected="${municipioActivo != null and municipioActivo == m}"
+                    style="color:#1a1f2e;">Bilbao</option>
+          </select>
+        </th:block>
+        <th:block th:if="${municipios == null or #lists.isEmpty(municipios)}">
+          <input type="text" name="municipio" class="fc-input"
+                 placeholder="Ej: Bilbao" th:value="${municipioActivo}"/>
+        </th:block>
+      </div>
+
+      <!-- Ordenar -->
+      <div class="fc-group">
+        <span class="fc-label">Ordenar por</span>
+        <select name="orden" class="fc-select">
+          <option value="reciente"    style="color:#1a1f2e;"
+                  th:selected="${ordenActivo == null or ordenActivo == 'reciente'}">
+            Más recientes primero
+          </option>
+          <option value="precio_asc"  style="color:#1a1f2e;"
+                  th:selected="${ordenActivo == 'precio_asc'}">
+            Precio: menor a mayor
+          </option>
+          <option value="precio_desc" style="color:#1a1f2e;"
+                  th:selected="${ordenActivo == 'precio_desc'}">
+            Precio: mayor a menor
+          </option>
+        </select>
+      </div>
+
+      <div class="fc-spacer"></div>
+
+      <!-- Botones -->
+      <button type="submit"  class="btn-aplicar">Buscar</button>
+      <button type="button"  class="btn-reset" onclick="window.location='/catalogo'">
+        ✕ Limpiar
+      </button>
+
+    </div><!-- /filter-row-controls -->
+
+    <!-- Input oculto para preservar el tipo al enviar el form -->
+    <input type="hidden" name="tipo"
+           th:value="${tipoActivo != null ? tipoActivo : ''}"/>
+
+  </div><!-- /filter-shell -->
+</form>
+
+<!-- ══ TAGS FILTROS ACTIVOS ══ -->
+<div class="active-filters">
+  <span class="af-tag"
+        th:if="${tipoActivo != null and !#strings.isEmpty(tipoActivo)}">
+    Tipo: <strong th:text="${tipoActivo}"></strong>
+    <a th:href="@{/catalogo(precioMin=${precioMin},precioMax=${precioMax},municipio=${municipioActivo},orden=${ordenActivo})}">×</a>
+  </span>
+  <span class="af-tag"
+        th:if="${precioMin != null or precioMax != null}">
+    Precio:
+    <strong>
+      <th:block th:if="${precioMin != null}"
+                th:text="${#numbers.formatInteger(precioMin,3,'POINT') + ' €'}"></th:block>
+      <th:block th:if="${precioMin == null}">0 €</th:block>
+      –
+      <th:block th:if="${precioMax != null}"
+                th:text="${#numbers.formatInteger(precioMax,3,'POINT') + ' €'}"></th:block>
+      <th:block th:if="${precioMax == null}">Sin límite</th:block>
+    </strong>
+    <a th:href="@{/catalogo(tipo=${tipoActivo},municipio=${municipioActivo},orden=${ordenActivo})}">×</a>
+  </span>
+  <span class="af-tag"
+        th:if="${municipioActivo != null and !#strings.isEmpty(municipioActivo)}">
+    Ciudad: <strong th:text="${municipioActivo}"></strong>
+    <a th:href="@{/catalogo(tipo=${tipoActivo},precioMin=${precioMin},precioMax=${precioMax},orden=${ordenActivo})}">×</a>
+  </span>
+  <button class="af-clear-all"
+          th:if="${(tipoActivo != null and !#strings.isEmpty(tipoActivo))
+                   or precioMin != null or precioMax != null
+                   or (municipioActivo != null and !#strings.isEmpty(municipioActivo))}"
+          onclick="window.location='/catalogo'">
+    Limpiar todos los filtros
+  </button>
 </div>
 
-<!-- ══ BODY ══ -->
+<!-- ══ RESULTADOS ══ -->
 <div class="cat-body">
-
-  <div class="cat-count" th:if="${!#lists.isEmpty(propiedades)}">
-    <strong th:text="${#lists.size(propiedades)}">0</strong>
-    <span th:text="${#lists.size(propiedades) == 1
-                     ? ' inmueble encontrado' : ' inmuebles encontrados'}">
-      inmuebles encontrados
-    </span>
-    <span th:if="${tipoActivo != null}"
-          class="tipo-tag"
-          th:text="' · Tipo: ' + ${tipoActivo}"></span>
+  <div class="results-header"
+       th:if="${propiedades != null and !#lists.isEmpty(propiedades)}">
+    <div class="results-count">
+      <strong th:text="${#lists.size(propiedades)}">0</strong>
+      <span th:text="${#lists.size(propiedades) == 1
+                       ? ' inmueble encontrado' : ' inmuebles encontrados'}"></span>
+      <span th:if="${tipoActivo != null and !#strings.isEmpty(tipoActivo)}"
+            class="tipo-tag" th:text="' · ' + ${tipoActivo}"></span>
+    </div>
   </div>
 
-  <div class="prop-grid" th:if="${!#lists.isEmpty(propiedades)}">
+  <!-- Grid de cards -->
+  <div class="prop-grid"
+       th:if="${propiedades != null and !#lists.isEmpty(propiedades)}">
     <a th:each="p : ${propiedades}"
        th:href="@{|/catalogo/${p.id}|}"
        class="prop-card">
-      <img th:if="${p.portadaUrl != null}"
-           th:src="${p.portadaUrl}" th:alt="${p.propertyCode}" class="prop-card-img"/>
-      <div th:if="${p.portadaUrl == null}" class="prop-card-img-placeholder">
-        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"
-             fill="none" stroke="rgba(106,171,220,.25)" stroke-width="1.5"
-             stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="2"/>
-          <circle cx="8.5" cy="8.5" r="1.5"/>
-          <polyline points="21 15 16 10 5 21"/>
-        </svg>
+
+      <!-- Imagen -->
+      <div class="prop-card-img-wrap">
+        <img th:if="${p.portadaUrl != null}"
+             th:src="${p.portadaUrl}" th:alt="${p.propertyCode}"
+             class="prop-card-img" loading="lazy"/>
+        <div th:if="${p.portadaUrl == null}" class="prop-card-img-placeholder">
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24"
+               fill="none" stroke="#ccc" stroke-width="1.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </div>
+        <span th:if="${p.preVendido != null and p.preVendido}"
+              class="prop-card-badge badge-prevendido">Pre-vendido</span>
+        <span th:if="${p.preVendido == null or !p.preVendido}"
+              class="prop-card-badge badge-disponible">Disponible</span>
       </div>
+
+      <!-- Datos -->
       <div class="prop-card-body">
-        <div class="prop-card-type"
-             th:text="${p.propertyType != null ? p.propertyType : 'Inmueble'}">Piso</div>
-        <div class="prop-card-code" th:text="${p.propertyCode}">Código</div>
+        <div class="prop-card-code"
+     th:text="${(p.propertyType != null ? p.propertyType : 'Inmueble')
+               + ' en '
+               + (p.address != null ? p.address + ', ' : '')
+               + (p.municipality != null ? p.municipality : '')}">
+  Piso en Calle Ejemplo 1, Bilbao
+</div>
+
+        <!-- Ubicación: municipio · provincia -->
         <div class="prop-card-location">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+          <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24"
                fill="none" stroke="currentColor" stroke-width="2"
                stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/>
             <circle cx="12" cy="10" r="3"/>
           </svg>
-          <span th:text="${(p.municipality != null ? p.municipality : 'Bilbao') +
-                           (p.province != null ? ' · ' + p.province : '')}">Bilbao</span>
+          <span th:text="${(p.municipality != null ? p.municipality : 'Bilbao')
+                           + (p.province != null ? ' · ' + p.province : '')}">
+            Bilbao · Bizkaia
+          </span>
         </div>
-        <div th:if="${p.precio != null}" class="prop-card-price"
-             th:text="${#numbers.formatInteger(p.precio, 3, 'POINT') + ' €'}">150.000 €</div>
-        <div th:if="${p.precio == null}" class="prop-card-price no-price">Consultar precio</div>
-        <span class="prop-card-cta">
-          Ver ficha
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor" stroke-width="2.5"
-               stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"/>
-            <polyline points="12 5 19 12 12 19"/>
-          </svg>
-        </span>
+
+        <!-- Precio + CTA -->
+        <div class="prop-card-footer">
+          <div th:if="${p.precio != null}" class="prop-card-price"
+               th:text="${#numbers.formatInteger(p.precio,3,'POINT') + ' €'}">
+            150.000 €
+          </div>
+          <div th:if="${p.precio == null}" class="prop-card-price no-price">
+            Consultar precio
+          </div>
+          <span class="prop-card-cta">
+            Ver ficha
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </span>
+        </div>
       </div>
     </a>
   </div>
 
-  <div class="cat-empty" th:if="${#lists.isEmpty(propiedades)}">
-    <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24"
-         fill="none" stroke="var(--border2)" stroke-width="1.5"
+  <!-- Empty state -->
+  <div class="cat-empty"
+       th:if="${propiedades == null or #lists.isEmpty(propiedades)}">
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+         fill="none" stroke="#ccc" stroke-width="1.5"
          stroke-linecap="round" stroke-linejoin="round"
-         style="display:block;margin:0 auto 20px;">
-      <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
-      <polyline points="9 21 9 12 15 12 15 21"/>
+         style="display:block;margin:0 auto 18px;">
+      <circle cx="11" cy="11" r="8"/>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
     </svg>
-    <h2>No hay inmuebles disponibles</h2>
-    <p th:if="${tipoActivo != null}">
-      No hay inmuebles del tipo
-      <strong style="color:var(--text2);" th:text="${tipoActivo}"></strong>.
-      <a href="/catalogo" style="color:var(--blue2); margin-left:6px;">Ver todos →</a>
-    </p>
-    <p th:if="${tipoActivo == null}">En este momento no tenemos propiedades publicadas. Vuelve pronto.</p>
+    <h2>Sin resultados</h2>
+    <p>No encontramos inmuebles con los filtros seleccionados.</p>
+    <a href="/catalogo"
+       style="display:inline-block;background:var(--dark);color:#fff;
+              padding:10px 28px;border-radius:8px;font-size:13px;font-weight:700;">
+      Ver todos los inmuebles
+    </a>
   </div>
 </div>
 
 <!-- ══ FOOTER ══ -->
 <footer class="pub-footer">
   <div class="pub-footer-brand">Solvia Store Bilbao</div>
-  <p>© 2026 Solvia Store Bilbao · Todos los derechos reservados</p>
+  <p>© 2026 Solvia Store Bilbao · Todos los derechos reservados ·
+    <a href="https://www.solvia.es/" target="_blank" rel="noopener noreferrer"
+       style="color:var(--blue);text-decoration:underline;text-underline-offset:2px;">
+      Solvia.es
+    </a>
+  </p>
   <a href="/login" class="pub-footer-login">
     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
          fill="none" stroke="currentColor" stroke-width="2"

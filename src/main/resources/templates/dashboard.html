@@ -2,19 +2,20 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: head('Panel')}"></head>
 <style>
+
+  /* ══ LAYOUT PRINCIPAL ══ */
   .dash-grid {
     display: grid;
-    grid-template-columns: 1fr 320px;
-    gap: 18px;
+    grid-template-columns: 1fr 340px;
+    gap: 20px;
     align-items: start;
   }
-  .dash-left  { display: flex; flex-direction: column; gap: 18px; }
-  .dash-right { display: flex; flex-direction: column; gap: 18px; }
+  .dash-left  { display: flex; flex-direction: column; gap: 20px; }
+  .dash-right { display: flex; flex-direction: column; gap: 20px; }
 
-  /* ── Bienvenida ── */
+  /* ══ BIENVENIDA ══ */
   .welcome-box {
-    background: #111111;
-    background: linear-gradient(135deg, #111111 0%, #2a2a2a 100%);
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 60%, #3b82f6 100%);
     color: #fff;
     border-radius: 16px;
     padding: 28px 32px;
@@ -23,109 +24,306 @@
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 16px;
+    box-shadow: 0 4px 20px rgba(37,99,235,.25);
   }
-  .welcome-box h1 { margin: 0; font-size: 26px; font-weight: 800; }
-  .welcome-box p  { margin: 6px 0 0; color: rgba(255,255,255,.55); font-size: 14px; text-transform: capitalize; }
+  .welcome-box h1 {
+    margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;
+  }
+  .welcome-box p {
+    margin: 5px 0 0; color: rgba(255,255,255,.72);
+    font-size: 13px; text-transform: capitalize;
+  }
 
-  /* ── Mini calendario ── */
-  .mini-cal {
+  /* ══ SECTION TITLE ══ */
+  .section-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title svg { color: #2563eb; flex-shrink: 0; }
+
+  /* ══ AGENDA ══ */
+  .agenda-card {
     background: #fff;
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 16px;
-    box-shadow: 0 4px 16px rgba(0,0,0,.05);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
   }
-  .mini-cal .cal-header {
+  .agenda-card-header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    padding: 18px 24px;
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 10px;
+    flex-wrap: wrap; gap: 10px;
   }
-  .mini-cal .cal-header span { font-weight: 700; font-size: 14px; }
+  .agenda-card-header-title {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .agenda-card-header-title span {
+    font-size: 15px; font-weight: 800; color: #fff; letter-spacing: -0.3px;
+  }
+  .agenda-card-header-controls {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  }
+  .agenda-date-input {
+    font-size: 12px; padding: 6px 10px; margin: 0;
+    border-radius: 8px; border: 1px solid rgba(255,255,255,.35);
+    background: rgba(255,255,255,.15); color: #fff;
+    width: auto; font-family: inherit; outline: none;
+    transition: border-color .15s;
+  }
+  .agenda-date-input:focus { border-color: rgba(255,255,255,.7); }
+  .agenda-date-input::-webkit-calendar-picker-indicator { filter: invert(1); }
+  .agenda-filter-btn {
+    font-size: 12px; padding: 6px 14px; border-radius: 8px;
+    background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.35);
+    color: #fff; font-weight: 700; font-family: inherit; cursor: pointer;
+    transition: background .15s;
+  }
+  .agenda-filter-btn:hover { background: rgba(255,255,255,.32); }
+  .agenda-clear-btn {
+    font-size: 12px; color: rgba(255,255,255,.65); text-decoration: none;
+    padding: 6px 8px; border-radius: 6px; transition: color .15s; font-weight: 600;
+  }
+  .agenda-clear-btn:hover { color: #fff; }
+  .agenda-new-btn {
+    font-size: 12px; padding: 6px 14px; border-radius: 8px;
+    background: #fff; border: none; color: #1e3a5f;
+    font-weight: 800; font-family: inherit; cursor: pointer; transition: background .15s;
+  }
+  .agenda-new-btn:hover { background: #dbeafe; }
+
+  /* Cuerpo agenda — limpio y simple */
+  .agenda-body {
+    background-color: #fff;
+    min-height: 120px;
+  }
+  .agenda-body-inner { position: relative; }
+
+  .note-item {
+    display: flex; align-items: center;
+    min-height: 58px;
+    padding: 10px 20px 10px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background .15s;
+    gap: 12px;
+  }
+  .note-item:last-child { border-bottom: none; }
+  .note-item:hover { background: #f8faff; }
+
+  .note-bullet {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #2563eb; flex-shrink: 0;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+  }
+  .note-date {
+    font-size: 11px; font-weight: 800; color: #2563eb;
+    background: #eff6ff; border: 1px solid #bfdbfe;
+    border-radius: 6px; padding: 3px 8px;
+    white-space: nowrap; flex-shrink: 0; min-width: 52px; text-align: center;
+  }
+  .note-content {
+    font-size: 14px; font-weight: 500; color: #0f172a;
+    flex: 1; line-height: 1.5;
+  }
+  .note-del {
+    background: none; border: none; color: #cbd5e1;
+    padding: 4px; cursor: pointer; flex-shrink: 0;
+    border-radius: 6px; display: flex; align-items: center;
+    transition: color .15s, background .15s;
+  }
+  .note-del:hover { color: #dc2626; background: #fee2e2; }
+
+  .agenda-empty {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 36px 20px; color: #94a3b8; text-align: center;
+  }
+  .agenda-empty p { font-size: 13px; margin-top: 10px; }
+
+  /* ══ GRÁFICO PIZZA ══ */
+  .chart-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  }
+  .chart-card-header {
+    padding: 18px 24px 0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .chart-card-body {
+    padding: 20px 24px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+  .chart-wrap {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    flex-shrink: 0;
+  }
+  .chart-legend {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 8px 16px;
+  }
+  .chart-legend-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: #1e293b;
+  }
+  .chart-legend-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .chart-legend-label { flex: 1; font-weight: 500; }
+  .chart-legend-val   { font-weight: 800; color: #0f172a; font-size: 13px; }
+
+  /* ══ VISITAS DE HOY ══ */
+  .visit-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  }
+  .visit-card-header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .visit-card-header span {
+    font-size: 13px; font-weight: 800; color: #fff; letter-spacing: -0.2px;
+  }
+  .visit-card-body { padding: 14px 16px; }
+
+  .visit-item {
+    background: #f8faff;
+    border: 1px solid #e0eaff;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    transition: box-shadow .15s, border-color .15s;
+  }
+  .visit-item:last-child { margin-bottom: 0; }
+  .visit-item:hover {
+    box-shadow: 0 4px 16px rgba(37,99,235,.10);
+    border-color: #93c5fd;
+  }
+  .visit-item-top {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+  }
+  .visit-hour-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #2563eb; color: #fff;
+    font-size: 13px; font-weight: 800;
+    padding: 4px 10px; border-radius: 7px; letter-spacing: 0.3px;
+  }
+  .visit-client-name {
+    font-size: 14px; font-weight: 800; color: #0f172a;
+    text-decoration: none; flex: 1; transition: color .15s;
+  }
+  .visit-client-name:hover { color: #2563eb; }
+  .visit-item-meta {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 12px; color: #475569; font-weight: 500; margin-bottom: 6px;
+  }
+  .visit-item-meta a {
+    color: #2563eb; font-weight: 700; text-decoration: none;
+  }
+  .visit-item-meta a:hover { text-decoration: underline; }
+  .visit-notes {
+    font-size: 13px; font-weight: 500; color: #1e293b;
+    background: #fff; border: 1px solid #bfdbfe;
+    border-left: 3px solid #2563eb;
+    border-radius: 0 8px 8px 0;
+    padding: 8px 12px; line-height: 1.55; margin-top: 4px;
+  }
+  .visit-empty {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 28px 16px; color: #94a3b8; text-align: center;
+  }
+  .visit-empty p { font-size: 13px; margin-top: 8px; }
+
+  /* ══ MINI CALENDARIO ══ */
+  .mini-cal {
+    background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  }
+  .mini-cal-header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    padding: 14px 18px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .mini-cal-header span {
+    font-weight: 800; font-size: 13px; color: #fff; letter-spacing: -0.2px;
+  }
+  .mini-cal-body { padding: 12px 14px 16px; }
   .cal-grid {
-    display: grid; grid-template-columns: repeat(7,1fr);
+    display: grid; grid-template-columns: repeat(7, 1fr);
     gap: 3px; text-align: center;
   }
   .cal-grid .day-name {
-    font-size: 10px; font-weight: 700; color: var(--muted);
-    text-transform: uppercase; padding: 4px 0;
+    font-size: 10px; font-weight: 700; color: #94a3b8;
+    text-transform: uppercase; padding: 4px 0; letter-spacing: 0.5px;
   }
   .cal-grid .day {
-    font-size: 12px; padding: 5px 0; border-radius: 8px; cursor: default;
-    color: var(--text);
+    font-size: 12px; padding: 6px 0; border-radius: 8px;
+    cursor: default; color: #334155; font-weight: 500;
+    transition: background .12s;
   }
+  .cal-grid .day:hover { background: #eff6ff; }
   .cal-grid .day.today {
-    background: #111; color: #fff; font-weight: 800;
+    background: #2563eb; color: #fff; font-weight: 800;
+    box-shadow: 0 2px 8px rgba(37,99,235,.35);
   }
   .cal-grid .day.empty { visibility: hidden; }
 
-  /* ── Secciones ── */
-  .section-title {
-    font-size:11px; font-weight:700; letter-spacing:1.2px;
-    text-transform:uppercase; color:var(--muted); margin-bottom:12px;
-    display:flex; align-items:center; gap:6px;
-  }
-
-  /* ── Notas agenda ── */
-  .note-item {
-    display: flex; align-items: flex-start; gap: 10px;
-    padding: 10px 0; border-bottom: 1px solid var(--line);
-  }
-  .note-item:last-child { border-bottom: none; }
-  .note-date {
-    font-size: 11px; font-weight: 700; color: var(--muted);
-    white-space: nowrap; min-width: 72px;
-    background: #f5f5f5; border-radius: 6px;
-    padding: 3px 8px; text-align: center;
-  }
-  .note-content { font-size: 13px; flex: 1; line-height: 1.5; }
-  .note-del {
-    background: none; border: none; color: #ccc; padding: 0;
-    cursor: pointer; font-size: 16px; line-height: 1; flex-shrink: 0;
-  }
-  .note-del:hover { color: #b42318; background: none; }
-
-  /* ── Visitas de hoy ── */
-  .visit-today-item {
-    padding: 12px 14px;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    margin-bottom: 8px;
-    font-size: 13px;
-    transition: box-shadow .15s;
-  }
-  .visit-today-item:last-child { margin-bottom: 0; }
-  .visit-today-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-  .visit-hour {
-    font-weight: 800; color: #111; font-size: 16px;
-    display: inline-flex; align-items: center; gap: 6px;
-  }
-
-  /* ── Chart ── */
-  .chart-wrap { position: relative; height: 220px; }
-
-  /* ── Usuarios ── */
+  /* ══ USUARIOS ══ */
   .user-row {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13px;
+    padding: 11px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px;
   }
   .user-row:last-child { border-bottom: none; }
+  .user-name   { font-weight: 700; color: #0f172a; }
+  .user-handle { color: #94a3b8; font-size: 12px; }
+  .user-badge-admin {
+    font-size: 10px; background: #1e3a5f; color: #fff;
+    border-radius: 4px; padding: 2px 7px; margin-left: 7px;
+    font-weight: 800; letter-spacing: 0.5px;
+  }
 
-  /* ── Modales ── */
+  /* ══ MODALES ══ */
   .modal-backdrop {
     display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.38); z-index: 2000;
+    background: rgba(15,23,42,.45); z-index: 2000;
     align-items: center; justify-content: center;
+    backdrop-filter: blur(3px);
   }
   .modal-backdrop.open { display: flex; }
   .modal-box {
-    background: #fff; border-radius: 16px; padding: 28px;
+    background: #fff; border-radius: 20px; padding: 32px;
     width: 100%; max-width: 440px;
-    box-shadow: 0 16px 48px rgba(0,0,0,.18);
+    box-shadow: 0 24px 64px rgba(0,0,0,.18);
+    border: 1px solid #e2e8f0;
   }
-  .modal-box h3 { margin: 0 0 18px; font-size: 17px; }
-  .modal-actions { display: flex; gap: 10px; margin-top: 18px; justify-content: flex-end; }
+  .modal-box h3 {
+    margin: 0 0 6px; font-size: 18px; font-weight: 800;
+    color: #0f172a; letter-spacing: -0.4px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .modal-box h3 svg { color: #2563eb; }
+  .modal-sub { font-size: 13px; color: #64748b; margin-bottom: 22px; }
+  .modal-actions {
+    display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;
+  }
 
   @media (max-width: 900px) {
     .dash-grid { grid-template-columns: 1fr; }
+    .chart-wrap { width: 220px; height: 220px; }
   }
 </style>
 <body>
@@ -138,11 +336,20 @@
 <!-- ══ MODAL NUEVA NOTA ══ -->
 <div class="modal-backdrop" id="modalNota">
   <div class="modal-box">
-    <h3>📝 Nueva anotación</h3>
+    <h3>
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20h9"/>
+        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+      </svg>
+      Nueva anotación
+    </h3>
+    <p class="modal-sub">Añade una nota a tu agenda personal.</p>
     <form method="post" th:action="@{/agenda/nueva}">
       <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
       <label>Fecha</label>
-      <input type="date" name="noteDate" id="notaFecha" required style="margin:0 0 12px;"/>
+      <input type="date" name="noteDate" id="notaFecha" required style="margin:0 0 14px;"/>
       <label>Nota</label>
       <textarea name="content" rows="4" placeholder="Escribe tu anotación..."
                 style="margin:0;" required></textarea>
@@ -151,7 +358,7 @@
                 onclick="document.getElementById('modalNota').classList.remove('open')">
           Cancelar
         </button>
-        <button type="submit">Guardar</button>
+        <button type="submit">Guardar nota</button>
       </div>
     </form>
   </div>
@@ -161,15 +368,27 @@
 <div class="modal-backdrop" id="modalUsuario"
      th:if="${appUser.role == 'ADMIN'}">
   <div class="modal-box">
-    <h3>👤 Registrar usuario</h3>
+    <h3>
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      Registrar usuario
+    </h3>
+    <p class="modal-sub">Crea un nuevo acceso al sistema interno.</p>
     <form method="post" th:action="@{/usuarios/registrar}">
       <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
       <label>Nombre para mostrar</label>
-      <input type="text" name="displayName" required style="margin:0 0 12px;" placeholder="Ej: María García"/>
+      <input type="text" name="displayName" required style="margin:0 0 14px;"
+             placeholder="Ej: María García"/>
       <label>Usuario (login)</label>
-      <input type="text" name="username" required style="margin:0 0 12px;" placeholder="Ej: mgarcia"/>
+      <input type="text" name="username" required style="margin:0 0 14px;"
+             placeholder="Ej: mgarcia"/>
       <label>Contraseña</label>
-      <input type="password" name="password" required style="margin:0;" placeholder="Mínimo 8 caracteres"/>
+      <input type="password" name="password" required style="margin:0;"
+             placeholder="Mínimo 8 caracteres"/>
       <div class="modal-actions">
         <button type="button" class="btn btn-secondary"
                 onclick="document.getElementById('modalUsuario').classList.remove('open')">
@@ -181,86 +400,130 @@
   </div>
 </div>
 
+<!-- ══ CONTENIDO PRINCIPAL ══ -->
 <div class="container">
   <div class="dash-grid">
 
-    <!-- ══ COLUMNA IZQUIERDA ══ -->
+    <!-- ════ COLUMNA IZQUIERDA ════ -->
     <div class="dash-left">
 
       <!-- Bienvenida -->
       <div class="welcome-box">
         <div>
-          <h1 th:text="'Bienvenido, ' + ${appUser.displayName} + ' 👋'">Bienvenido</h1>
+          <h1 th:text="'Bienvenido, ' + ${appUser.displayName}">Bienvenido</h1>
           <p th:text="${#temporals.format(today, 'EEEE, d MMMM yyyy')}">Lunes, 23 febrero 2026</p>
-        </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <a class="btn" th:href="@{/interesados}"
-             style="background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.25);
-                    color:#fff; font-size:12px; padding:8px 16px;">
-            📋 Interesados
-          </a>
-          <a class="btn" th:href="@{/clientes}"
-             style="background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.25);
-                    color:#fff; font-size:12px; padding:8px 16px;">
-            👥 Clientes
-          </a>
         </div>
       </div>
 
-      <!-- Agenda -->
-      <div class="card">
-        <div style="display:flex; align-items:center; justify-content:space-between;
-                    margin-bottom:14px; flex-wrap:wrap; gap:10px;">
-          <div class="section-title" style="margin:0;">
-            📓 Agenda
+      <!-- ══ AGENDA ══ -->
+      <div class="agenda-card">
+        <div class="agenda-card-header">
+          <div class="agenda-card-header-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span>Agenda</span>
           </div>
-          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <div class="agenda-card-header-controls">
             <form method="get" th:action="@{/dashboard}"
                   style="display:flex; gap:6px; align-items:center; margin:0;">
-              <input type="date" name="agendaDate"
-                     th:value="${agendaDate}"
-                     style="margin:0; font-size:12px; padding:6px 10px; width:auto;"/>
-              <button type="submit" style="font-size:12px; padding:6px 12px;">Filtrar</button>
-              <a th:href="@{/dashboard}"
-                 style="font-size:12px; color:var(--muted); text-decoration:none;
-                        padding:6px 8px; border-radius:6px;"
-                 title="Limpiar filtro">✕</a>
+              <input type="date" name="agendaDate" class="agenda-date-input"
+                     th:value="${agendaDate}"/>
+              <button type="submit" class="agenda-filter-btn">Filtrar</button>
+              <a th:href="@{/dashboard}" class="agenda-clear-btn" title="Limpiar filtro">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </a>
             </form>
-            <button type="button" onclick="openNotaModal()"
-                    style="font-size:12px; padding:7px 14px;">
+            <button type="button" class="agenda-new-btn" onclick="openNotaModal()">
               + Nueva nota
             </button>
           </div>
         </div>
 
-        <p th:if="${#lists.isEmpty(notes)}"
-           style="color:var(--muted); font-size:13px; margin:0; text-align:center;
-                  padding:20px 0;">
-          No hay anotaciones.
-        </p>
+        <div class="agenda-body">
+          <div class="agenda-body-inner">
 
-        <div th:each="n : ${notes}" class="note-item">
-          <div class="note-date"
-               th:text="${#temporals.format(n.noteDate, 'dd/MM')}">01/01</div>
-          <div class="note-content" th:text="${n.content}">Nota...</div>
-          <button class="note-del"
-                  th:attr="data-id=${n.id}"
-                  onclick="deleteNota(this)" title="Eliminar">✕</button>
+            <div class="agenda-empty" th:if="${#lists.isEmpty(notes)}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24"
+                   fill="none" stroke="#cbd5e1" stroke-width="1.5"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              <p>No hay anotaciones para esta fecha.</p>
+            </div>
+
+            <div th:each="n : ${notes}" class="note-item">
+              <div class="note-bullet"></div>
+              <div class="note-date"
+                   th:text="${#temporals.format(n.noteDate, 'dd/MM')}">01/01</div>
+              <div class="note-content" th:text="${n.content}">Nota...</div>
+              <button class="note-del"
+                      th:attr="data-id=${n.id}"
+                      onclick="deleteNota(this)"
+                      title="Eliminar nota"
+                      aria-label="Eliminar nota">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+
+          </div>
         </div>
       </div>
 
-      <!-- Gráfico inmuebles -->
-      <div class="card">
-        <div class="section-title">🏠 Inmuebles con más interacciones</div>
-        <div class="chart-wrap">
-          <canvas id="chartInmuebles"></canvas>
+      <!-- ══ GRÁFICO PIZZA ══ -->
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div class="section-title" style="margin:0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+              <path d="M22 12A10 10 0 0 0 12 2v10z"/>
+            </svg>
+            Inmuebles con más interacciones
+          </div>
+        </div>
+        <div class="chart-card-body">
+          <div class="chart-wrap">
+            <canvas id="chartInmuebles"></canvas>
+          </div>
+          <div class="chart-legend" id="chartLegend"></div>
         </div>
       </div>
 
-      <!-- Gestión de usuarios (solo ADMIN) -->
+      <!-- ══ USUARIOS (solo ADMIN) ══ -->
       <div class="card" th:if="${appUser.role == 'ADMIN'}">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
-          <div class="section-title" style="margin:0;">👥 Usuarios del sistema</div>
+        <div style="display:flex; align-items:center; justify-content:space-between;
+                    margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+          <div class="section-title" style="margin:0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            Usuarios del sistema
+          </div>
           <button type="button"
                   onclick="document.getElementById('modalUsuario').classList.add('open')"
                   style="font-size:12px; padding:7px 14px;">
@@ -269,83 +532,109 @@
         </div>
         <div th:each="u : ${allUsers}" class="user-row">
           <div>
-            <strong th:text="${u.displayName}">Nombre</strong>
-            <span style="color:var(--muted); font-size:12px;"
-                  th:text="' · @' + ${u.username}"> · @user</span>
-            <span th:if="${u.role == 'ADMIN'}"
-                  style="font-size:10px; background:#111; color:#fff;
-                         border-radius:4px; padding:1px 6px; margin-left:6px; font-weight:700;">
-              ADMIN
-            </span>
+            <span class="user-name" th:text="${u.displayName}">Nombre</span>
+            <span class="user-handle" th:text="' · @' + ${u.username}"> · @user</span>
+            <span th:if="${u.role == 'ADMIN'}" class="user-badge-admin">ADMIN</span>
           </div>
           <button th:if="${u.username != appUser.username}"
                   type="button"
                   th:attr="data-id=${u.id}"
                   onclick="deleteUser(this)"
-                  style="background:#b42318; border-color:#b42318;
-                         font-size:11px; padding:5px 10px;">
+                  style="background:#dc2626; border-color:#dc2626;
+                         font-size:11px; padding:5px 12px; border-radius:7px;">
             Eliminar
           </button>
         </div>
       </div>
 
-    </div>
+    </div><!-- /dash-left -->
 
-    <!-- ══ COLUMNA DERECHA ══ -->
+    <!-- ════ COLUMNA DERECHA ════ -->
     <div class="dash-right">
 
       <!-- Mini calendario -->
       <div class="mini-cal">
-        <div class="cal-header">
+        <div class="mini-cal-header">
           <span id="calMonthYear"></span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
         </div>
-        <div class="cal-grid" id="calGrid"></div>
+        <div class="mini-cal-body">
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
       </div>
 
       <!-- Visitas de hoy -->
-      <div class="card">
-        <div class="section-title">
-          📅 Visitas para hoy
+      <div class="visit-card">
+        <div class="visit-card-header">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span>Visitas para hoy</span>
         </div>
-        <p th:if="${#lists.isEmpty(todayVisits)}"
-           style="color:var(--muted); font-size:13px; margin:0; text-align:center; padding:16px 0;">
-          No hay visitas programadas hoy.
-        </p>
-        <div th:each="v : ${todayVisits}" class="visit-today-item">
-          <div>
-            <span class="visit-hour">
-              🕐 <span th:text="${#temporals.format(v.visitAt, 'HH:mm')}">10:00</span>
-            </span>
-          </div>
-          <div style="margin-top:5px;">
-            <a th:href="@{|/clientes/${v.client.id}|}"
-               th:text="${v.client.fullName}"
-               style="font-weight:700; text-decoration:none; color:inherit; font-size:13px;"></a>
-          </div>
-          <div style="font-size:12px; color:var(--muted); margin-top:2px;
-                      display:flex; align-items:center; gap:4px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24"
-                 fill="none" stroke="currentColor" stroke-width="2.5"
+        <div class="visit-card-body">
+
+          <div class="visit-empty" th:if="${#lists.isEmpty(todayVisits)}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24"
+                 fill="none" stroke="#cbd5e1" stroke-width="1.5"
                  stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-              <polyline points="9 22 9 12 15 12 15 22"/>
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
             </svg>
-            <a th:href="@{|/inmuebles/${v.property.id}|}"
-               th:text="${v.property.propertyCode}"
-               style="text-decoration:none; color:var(--muted); font-weight:600;"></a>
-            <span th:if="${v.property.municipality != null}"
-                  th:text="' · ' + ${v.property.municipality}"></span>
+            <p>No hay visitas programadas hoy.</p>
           </div>
-          <div th:if="${v.notes != null and !#strings.isEmpty(v.notes)}"
-               style="font-size:11px; color:#888; margin-top:4px; padding:4px 8px;
-                      background:#f5f5f5; border-radius:6px;"
-               th:text="${v.notes}"></div>
+
+          <div th:each="v : ${todayVisits}" class="visit-item">
+            <div class="visit-item-top">
+              <div class="visit-hour-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span th:text="${#temporals.format(v.visitAt, 'HH:mm')}">10:00</span>
+              </div>
+              <a th:href="@{|/clientes/${v.client.id}|}"
+                 th:text="${v.client.fullName}"
+                 class="visit-client-name"></a>
+            </div>
+
+            <div class="visit-item-meta">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                   viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+              <a th:href="@{|/inmuebles/${v.property.id}|}"
+                 th:text="${v.property.propertyCode}"></a>
+              <span th:if="${v.property.municipality != null}"
+                    th:text="' · ' + ${v.property.municipality}"
+                    style="color:#94a3b8;"></span>
+            </div>
+
+            <div th:if="${v.notes != null and !#strings.isEmpty(v.notes)}"
+                 class="visit-notes"
+                 th:text="${v.notes}"></div>
+          </div>
+
         </div>
       </div>
 
-    </div>
-  </div>
-</div>
+    </div><!-- /dash-right -->
+
+  </div><!-- /dash-grid -->
+</div><!-- /container -->
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script th:inline="javascript">
@@ -363,7 +652,7 @@
   }
 
   /* ══ MINI CALENDARIO ══ */
-  (function() {
+  (function () {
     const today    = new Date(TODAY_STR + 'T00:00:00');
     const year     = today.getFullYear();
     const month    = today.getMonth();
@@ -381,7 +670,8 @@
       grid.appendChild(el);
     });
     for (let i = 0; i < firstDow; i++) {
-      const el = document.createElement('div'); el.className = 'day empty'; grid.appendChild(el);
+      const el = document.createElement('div');
+      el.className = 'day empty'; grid.appendChild(el);
     }
     for (let d = 1; d <= days; d++) {
       const el = document.createElement('div');
@@ -391,36 +681,58 @@
     }
   })();
 
-  /* ══ GRÁFICO INMUEBLES ══ */
-  (function() {
+  /* ══ GRÁFICO PIZZA ══ */
+  (function () {
+    if (!TOP_PROPS.length) return;
+
     const labels = TOP_PROPS.map(p => p[0]);
     const data   = TOP_PROPS.map(p => p[1]);
-    const COLORS = ['#111111','#f5c800','#b42318','#168a53','#b02cff',
-                    '#e07a18','#5aa7ff','#ff4d6d','#00b4d8','#6d6875'];
+    const COLORS = [
+      '#2563eb','#3b82f6','#60a5fa','#93c5fd',
+      '#1d4ed8','#6366f1','#8b5cf6','#a78bfa',
+      '#06b6d4','#0ea5e9'
+    ];
+
     const ctx = document.getElementById('chartInmuebles').getContext('2d');
     new Chart(ctx, {
-      type: 'bar',
+      type: 'doughnut',
       data: {
         labels,
         datasets: [{
-          label: 'Interacciones',
           data,
           backgroundColor: data.map((_, i) => COLORS[i % COLORS.length]),
-          borderRadius: 6,
-          borderSkipped: false,
+          borderWidth: 3,
+          borderColor: '#ffffff',
+          hoverOffset: 10
         }]
       },
       options: {
         responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { beginAtZero: true, ticks: { precision: 0 },
-               grid: { color: 'rgba(0,0,0,.06)' } },
-          x: { ticks: { font: { size: 11 } },
-               grid: { display: false } }
+        maintainAspectRatio: true,
+        cutout: '58%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.label}: ${ctx.parsed} interacciones`
+            }
+          }
         }
       }
+    });
+
+    /* Leyenda personalizada */
+    const legend = document.getElementById('chartLegend');
+    labels.forEach((label, i) => {
+      const item = document.createElement('div');
+      item.className = 'chart-legend-item';
+      item.innerHTML = `
+        <div class="chart-legend-dot"
+             style="background:${COLORS[i % COLORS.length]}"></div>
+        <span class="chart-legend-label">${label}</span>
+        <span class="chart-legend-val">${data[i]}</span>
+      `;
+      legend.appendChild(item);
     });
   })();
 
@@ -429,12 +741,12 @@
     document.getElementById('notaFecha').value = new Date().toISOString().split('T')[0];
     document.getElementById('modalNota').classList.add('open');
   }
-  document.getElementById('modalNota').addEventListener('click', function(e) {
+  document.getElementById('modalNota').addEventListener('click', function (e) {
     if (e.target === this) this.classList.remove('open');
   });
   const modalUsuario = document.getElementById('modalUsuario');
   if (modalUsuario) {
-    modalUsuario.addEventListener('click', function(e) {
+    modalUsuario.addEventListener('click', function (e) {
       if (e.target === this) this.classList.remove('open');
     });
   }
