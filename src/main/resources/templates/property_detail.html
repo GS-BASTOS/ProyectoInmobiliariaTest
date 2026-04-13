@@ -4,7 +4,7 @@
 <style>
   /* ═══════════════════════════════════════════
      PROPERTY DETAIL — CRM Layout
-     Visual refresh: light-blue palette, improved spacing & legibility
+     Visual refresh v3: darker blue, black text, larger fonts, more panel spacing
   ═══════════════════════════════════════════ */
 
   /* Layout principal: sidebar + contenido */
@@ -30,41 +30,41 @@
   /* Panel genérico */
   .pd-panel {
     background: var(--surface, #fff);
-    border: 1px solid #c8dff0;
+    border: 1px solid #8ab8d8;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(30, 100, 170, 0.06);
+    box-shadow: 0 2px 8px rgba(20, 70, 130, 0.08);
   }
   .pd-panel-header {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 13px 18px;
-    border-bottom: 1px solid #d6eaf8;
-    background: linear-gradient(135deg, #e8f4fd 0%, #f0f7ff 100%);
+    padding: 14px 20px;
+    border-bottom: 1px solid #b0d0e8;
+    background: linear-gradient(135deg, #c8dff0 0%, #daedf8 100%);
   }
-  .pd-panel-header svg { flex-shrink: 0; color: #1a72b8; }
+  .pd-panel-header svg { flex-shrink: 0; color: #0a4f82; }
   .pd-panel-title {
-    font-size: 11.5px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.9px;
     text-transform: uppercase;
-    color: #1a72b8;
+    color: #0a4f82;
     margin: 0;
   }
-  .pd-panel-body { padding: 18px; }
+  .pd-panel-body { padding: 20px; }
 
   /* Cabecera de inmueble */
   .pd-prop-header {
-    padding: 22px 22px 18px;
-    border-bottom: 1px solid #d6eaf8;
-    background: linear-gradient(160deg, #f0f7ff 0%, #fafcff 100%);
+    padding: 24px 24px 20px;
+    border-bottom: 1px solid #b0d0e8;
+    background: linear-gradient(160deg, #d6eaf8 0%, #eef6fc 100%);
   }
   .pd-prop-code {
-    font-size: 23px;
+    font-size: 24px;
     font-weight: 800;
     letter-spacing: -0.3px;
-    color: #0d3b6e;
+    color: #0a2a50;
     line-height: 1.15;
     margin-bottom: 10px;
   }
@@ -82,7 +82,7 @@
     gap: 4px;
     padding: 4px 10px;
     border-radius: 6px;
-    font-size: 11.5px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.2px;
     border: 1px solid transparent;
@@ -102,21 +102,21 @@
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    padding: 11px 18px;
-    border-bottom: 1px solid #e8f2fb;
+    padding: 13px 20px;
+    border-bottom: 1px solid #d6eaf8;
     gap: 12px;
   }
   .kpi-row:last-child { border-bottom: none; }
   .kpi-label {
-    font-size: 11.5px;
-    color: #5a8ab5;
+    font-size: 12px;
+    color: #0a4f82;
     font-weight: 600;
     flex-shrink: 0;
   }
   .kpi-value {
-    font-size: 13.5px;
+    font-size: 14px;
     font-weight: 700;
-    color: #0d2d4f;
+    color: #111;
     text-align: right;
   }
   .kpi-value.price {
@@ -125,7 +125,7 @@
     color: #1a6e3c;
     letter-spacing: -0.3px;
   }
-  .kpi-value.empty { color: #aac4de; font-weight: 400; font-style: italic; }
+  .kpi-value.empty { color: #90b8d0; font-weight: 400; font-style: italic; }
 
   /* Interesados counter */
   .interested-badge {
@@ -133,13 +133,13 @@
     align-items: center;
     gap: 10px;
     padding: 10px 14px;
-    background: #e8f4fd;
-    border: 1px solid #c8dff0;
+    background: #d6eaf8;
+    border: 1px solid #8ab8d8;
     border-radius: 8px;
-    font-size: 13.5px;
-    color: #0d3b6e;
+    font-size: 14px;
+    color: #0a2a50;
   }
-  .interested-badge strong { font-size: 19px; font-weight: 800; color: #1a72b8; }
+  .interested-badge strong { font-size: 20px; font-weight: 800; color: #0a5fa0; }
 
   /* Acciones rápidas sidebar */
   .action-list { display: flex; flex-direction: column; gap: 8px; padding: 14px; }
@@ -149,21 +149,21 @@
     gap: 8px;
     padding: 10px 14px;
     border-radius: 8px;
-    font-size: 13.5px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    border: 1px solid #c8dff0;
-    background: #f7fbff;
-    color: #0d3b6e;
+    border: 1px solid #8ab8d8;
+    background: #eef6fc;
+    color: #0a2a50;
     text-decoration: none;
     transition: background 0.14s, border-color 0.14s, box-shadow 0.14s;
     width: 100%;
     text-align: left;
   }
   .btn-action:hover {
-    background: #e1f0fb;
-    border-color: #90c4e8;
-    box-shadow: 0 2px 8px rgba(26, 114, 184, 0.1);
+    background: #cce3f4;
+    border-color: #5a9cc8;
+    box-shadow: 0 2px 8px rgba(10, 80, 150, 0.12);
   }
   .btn-action.primary {
     background: #1a6e3c;
@@ -179,13 +179,13 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    padding: 14px 18px;
+    padding: 14px 20px;
     transition: background 0.2s;
   }
   .publish-row.is-published { background: #f0fdf4; }
   .publish-info { flex: 1; min-width: 0; }
-  .publish-info strong { font-size: 13.5px; font-weight: 700; display: block; color: #0d2d4f; }
-  .publish-info span { font-size: 11.5px; color: #5a8ab5; }
+  .publish-info strong { font-size: 14px; font-weight: 700; display: block; color: #111; }
+  .publish-info span { font-size: 12px; color: #0a4f82; }
   .toggle-switch {
     position: relative; display: inline-block;
     width: 44px; height: 24px; flex-shrink: 0;
@@ -193,7 +193,7 @@
   .toggle-switch input { opacity: 0; width: 0; height: 0; }
   .toggle-slider {
     position: absolute; cursor: pointer; inset: 0;
-    background: #b8d6ed; border-radius: 999px;
+    background: #8ab8d8; border-radius: 999px;
     transition: background .2s;
   }
   .toggle-slider::before {
@@ -206,13 +206,13 @@
   .toggle-switch input:checked + .toggle-slider { background: #168a53; }
   .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
   #publishStatus {
-    font-size: 11.5px; color: #5a8ab5;
-    font-style: italic; padding: 0 18px 12px;
+    font-size: 12px; color: #0a4f82;
+    font-style: italic; padding: 0 20px 12px;
     min-height: 20px;
   }
 
-  /* Secciones del contenido principal */
-  .pd-section { display: flex; flex-direction: column; gap: 20px; }
+  /* Secciones del contenido principal — MÁS ESPACIO entre paneles */
+  .pd-section { display: flex; flex-direction: column; gap: 28px; }
 
   /* Section block dentro de cards */
   .field-group {
@@ -221,13 +221,13 @@
     gap: 16px;
   }
   .field-group-title {
-    font-size: 10.5px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 1px;
     text-transform: uppercase;
-    color: #5a8ab5;
+    color: #0a4f82;
     padding-bottom: 9px;
-    border-bottom: 1px solid #d6eaf8;
+    border-bottom: 1px solid #b0d0e8;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -235,13 +235,13 @@
 
   /* Descripción en modo lectura */
   .desc-block {
-    padding: 14px 16px;
-    background: #f0f7ff;
+    padding: 16px 18px;
+    background: #eef6fc;
     border-radius: 8px;
-    font-size: 14px;
-    line-height: 1.7;
-    color: #1a2d40;
-    border: 1px solid #c8dff0;
+    font-size: 15px;
+    line-height: 1.75;
+    color: #111;
+    border: 1px solid #8ab8d8;
     white-space: pre-wrap;
   }
 
@@ -250,7 +250,7 @@
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 14px 16px;
+    padding: 16px 18px;
     background: #fff8e1;
     border: 1px solid #ffe082;
     border-radius: 10px;
@@ -272,13 +272,13 @@
   }
   .media-item {
     position: relative;
-    border: 1px solid #c8dff0;
+    border: 1px solid #8ab8d8;
     border-radius: 10px;
     overflow: hidden;
-    background: #f0f7ff;
+    background: #eef6fc;
     transition: box-shadow 0.16s;
   }
-  .media-item:hover { box-shadow: 0 4px 16px rgba(26, 114, 184, 0.14); }
+  .media-item:hover { box-shadow: 0 4px 16px rgba(10, 80, 150, 0.16); }
   .media-item img {
     width: 100%; height: 140px;
     object-fit: cover; display: block;
@@ -293,16 +293,16 @@
     width: 100%; height: 140px;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    gap: 6px; background: #f7fbff;
+    gap: 6px; background: #eef6fc;
     text-decoration: none; color: #555;
     transition: background .14s;
   }
-  .media-pdf-thumb:hover { background: #e1f0fb; }
+  .media-pdf-thumb:hover { background: #cce3f4; }
   .media-label {
-    padding: 6px 8px; font-size: 11.5px; color: #5a8ab5;
+    padding: 6px 8px; font-size: 12px; color: #0a4f82;
     white-space: nowrap; overflow: hidden;
     text-overflow: ellipsis; background: #fff;
-    border-top: 1px solid #d6eaf8;
+    border-top: 1px solid #b0d0e8;
   }
   .media-delete {
     position: absolute; top: 6px; right: 6px;
@@ -320,14 +320,14 @@
 
   /* Upload zone */
   .upload-zone {
-    border: 2px dashed #90c4e8;
+    border: 2px dashed #5a9cc8;
     border-radius: 10px; padding: 26px 16px;
     text-align: center; cursor: pointer;
     transition: border-color .15s, background .15s;
-    background: #f7fbff; position: relative;
+    background: #eef6fc; position: relative;
   }
   .upload-zone:hover,
-  .upload-zone.dragover { border-color: #1a72b8; background: #e1f0fb; }
+  .upload-zone.dragover { border-color: #0a5fa0; background: #cce3f4; }
   .upload-zone input[type="file"] {
     position: absolute; inset: 0; opacity: 0;
     cursor: pointer; width: 100%; height: 100%;
@@ -338,37 +338,37 @@
   }
   .upload-empty {
     padding: 30px 20px; text-align: center;
-    color: #a0c4e0; font-size: 13.5px;
-    border: 1px dashed #c8dff0;
+    color: #5a9cc8; font-size: 14px;
+    border: 1px dashed #8ab8d8;
     border-radius: 10px; margin-top: 14px;
   }
 
   /* Form section block */
   .form-section {
-    padding: 18px;
+    padding: 20px;
     border-radius: 10px;
-    border: 1px solid #c8dff0;
-    background: #f7fbff;
-    margin-bottom: 16px;
+    border: 1px solid #8ab8d8;
+    background: #eef6fc;
+    margin-bottom: 20px;
   }
   .form-section:last-of-type { margin-bottom: 0; }
   .form-section-title {
-    font-size: 11px; font-weight: 700;
+    font-size: 11.5px; font-weight: 700;
     letter-spacing: 1px; text-transform: uppercase;
-    color: #1a72b8; margin-bottom: 14px;
+    color: #0a5fa0; margin-bottom: 16px;
     display: flex; align-items: center; gap: 6px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #d6eaf8;
+    border-bottom: 1px solid #b0d0e8;
   }
   .form-grid-3 {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px; margin-bottom: 12px;
+    gap: 14px; margin-bottom: 14px;
   }
   .form-grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 14px;
   }
   @media (max-width: 680px) {
     .form-grid-3, .form-grid-2 { grid-template-columns: 1fr; }
@@ -380,12 +380,12 @@
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    padding: 9px 14px;
+    padding: 10px 16px;
     border-radius: 8px;
-    border: 1px solid #c8dff0;
+    border: 1px solid #8ab8d8;
     background: #fff;
     transition: border-color 0.14s, background 0.14s;
-    font-size: 13.5px;
+    font-size: 14px;
   }
   .check-option:has(input:checked) {
     border-color: #e65100;
@@ -407,7 +407,7 @@
     display: flex;
     align-items: center;
     gap: 0;
-    border: 1px solid #c8dff0;
+    border: 1px solid #8ab8d8;
     border-radius: 8px;
     overflow: hidden;
     background: #fff;
@@ -420,15 +420,16 @@
     margin: 0;
     font-size: 14px;
     font-weight: 600;
+    color: #111;
   }
   .price-input-wrap input:focus { outline: none; box-shadow: none; }
   .price-input-wrap .currency {
     padding: 0 12px;
     font-size: 14px;
     font-weight: 700;
-    color: #5a8ab5;
-    border-left: 1px solid #c8dff0;
-    background: #e8f4fd;
+    color: #0a4f82;
+    border-left: 1px solid #8ab8d8;
+    background: #d6eaf8;
     height: 100%;
     display: flex;
     align-items: center;
@@ -436,7 +437,7 @@
 
   /* Alarm panel en form */
   .alarm-panel {
-    margin-top: 16px;
+    margin-top: 18px;
     padding: 16px;
     background: #fff8e1;
     border: 1px solid #ffe082;
@@ -480,17 +481,17 @@
     display: flex;
     gap: 2px;
     padding: 4px;
-    background: #d6eaf8;
+    background: #b0d0e8;
     border-radius: 10px;
     margin-bottom: 20px;
   }
   .tab-btn {
     flex: 1;
-    padding: 8px 14px;
+    padding: 9px 14px;
     border-radius: 7px;
-    font-size: 12.5px;
+    font-size: 13px;
     font-weight: 600;
-    color: #5a8ab5;
+    color: #0a4f82;
     background: transparent;
     border: none;
     cursor: pointer;
@@ -503,8 +504,8 @@
   }
   .tab-btn.active {
     background: #fff;
-    color: #0d3b6e;
-    box-shadow: 0 1px 6px rgba(26, 114, 184, 0.14);
+    color: #0a2a50;
+    box-shadow: 0 1px 6px rgba(10, 80, 150, 0.16);
   }
   .tab-pane { display: none; }
   .tab-pane.active { display: block; }
@@ -526,10 +527,10 @@
 <div class="container" style="padding-top: 24px; padding-bottom: 48px;">
 
   <!-- Breadcrumb -->
-  <div style="display:flex; align-items:center; gap:6px; font-size:12.5px; color:#5a8ab5; margin-bottom:20px;">
-    <a th:href="@{/inmuebles}" style="color:#1a72b8; text-decoration:none; font-weight:600;">Catálogo</a>
+  <div style="display:flex; align-items:center; gap:6px; font-size:13px; color:#0a4f82; margin-bottom:20px;">
+    <a th:href="@{/inmuebles}" style="color:#0a5fa0; text-decoration:none; font-weight:600;">Catálogo</a>
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    <span style="color:#0d3b6e; font-weight:700;" th:text="${property.propertyCode}">Ficha</span>
+    <span style="color:#0a2a50; font-weight:700;" th:text="${property.propertyCode}">Ficha</span>
   </div>
 
   <div class="pd-layout">
@@ -573,7 +574,7 @@
           <!-- Interesados -->
           <div class="interested-badge">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                 fill="none" stroke="#1a72b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                 fill="none" stroke="#0a5fa0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
               <circle cx="9" cy="7" r="4"/>
               <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
@@ -670,9 +671,9 @@
         <div id="publishStatus"></div>
 
         <!-- Precio público -->
-        <div style="padding:0 18px 16px;">
-          <div style="font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase;
-                      color:#5a8ab5; margin-bottom:10px;">Precio público</div>
+        <div style="padding:0 20px 18px;">
+          <div style="font-size:11.5px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase;
+                      color:#0a4f82; margin-bottom:10px;">Precio público</div>
           <form th:action="@{|/inmuebles/${property.id}/actualizar|}" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <input type="hidden" name="province"     th:value="${property.province}"/>
@@ -694,17 +695,17 @@
                 <span class="currency">€</span>
               </div>
               <button type="submit" class="btn-action primary"
-                      style="width:auto; padding:9px 12px; font-size:12.5px;">
+                      style="width:auto; padding:9px 12px; font-size:13px;">
                 Guardar
               </button>
               <button th:if="${property.precio != null}" type="submit"
                       onclick="this.form.querySelector('[name=precio]').value = ''"
                       class="btn-action"
-                      style="width:auto; padding:9px 10px; font-size:11.5px; color:#c62828;">
+                      style="width:auto; padding:9px 10px; font-size:12px; color:#c62828;">
                 Quitar
               </button>
             </div>
-            <div style="font-size:11.5px; color:#a0c4e0; margin-top:6px;">
+            <div style="font-size:12px; color:#5a9cc8; margin-top:6px;">
               Sin precio → aparece como <em>"Consultar precio"</em>
             </div>
           </form>
@@ -748,25 +749,25 @@
             <h3 class="pd-panel-title">Localización y tipo</h3>
           </div>
           <div class="pd-panel-body">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
               <div>
-                <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#5a8ab5; margin-bottom:5px;">Dirección</div>
-                <div style="font-size:14.5px; font-weight:700; color:#0d2d4f;"
+                <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#0a4f82; margin-bottom:6px;">Dirección</div>
+                <div style="font-size:15px; font-weight:700; color:#111;"
                      th:text="${property.address != null and !#strings.isEmpty(property.address) ? property.address : '—'}">—</div>
               </div>
               <div>
-                <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#5a8ab5; margin-bottom:5px;">Tipo</div>
-                <div style="font-size:14.5px; font-weight:700; color:#0d2d4f;"
+                <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#0a4f82; margin-bottom:6px;">Tipo</div>
+                <div style="font-size:15px; font-weight:700; color:#111;"
                      th:text="${property.propertyType != null and !#strings.isEmpty(property.propertyType) ? property.propertyType : '—'}">—</div>
               </div>
               <div>
-                <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#5a8ab5; margin-bottom:5px;">Municipio</div>
-                <div style="font-size:14.5px; font-weight:700; color:#0d2d4f;"
+                <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#0a4f82; margin-bottom:6px;">Municipio</div>
+                <div style="font-size:15px; font-weight:700; color:#111;"
                      th:text="${property.municipality != null and !#strings.isEmpty(property.municipality) ? property.municipality : '—'}">—</div>
               </div>
               <div>
-                <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#5a8ab5; margin-bottom:5px;">Provincia</div>
-                <div style="font-size:14.5px; font-weight:700; color:#0d2d4f;"
+                <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#0a4f82; margin-bottom:6px;">Provincia</div>
+                <div style="font-size:15px; font-weight:700; color:#111;"
                      th:text="${property.province != null and !#strings.isEmpty(property.province) ? property.province : '—'}">—</div>
               </div>
             </div>
@@ -826,7 +827,7 @@
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
               <div>
-                <div style="font-size:10.5px; text-transform:uppercase; letter-spacing:0.7px; color:#e65100; font-weight:700; margin-bottom:4px;">Clave</div>
+                <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.7px; color:#e65100; font-weight:700; margin-bottom:4px;">Clave</div>
                 <div class="alarm-code-big"
                      th:text="${property.alarmCode != null and !#strings.isEmpty(property.alarmCode) ? property.alarmCode : '——'}">——</div>
               </div>
@@ -860,22 +861,22 @@
                        id="fileInput"/>
                 <div class="upload-zone-inner">
                   <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
-                       fill="none" stroke="#90c4e8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                       fill="none" stroke="#5a9cc8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="16 16 12 12 8 16"/>
                     <line x1="12" y1="12" x2="12" y2="21"/>
                     <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
                   </svg>
-                  <span style="font-size:13.5px; color:#5a8ab5;">
-                    Arrastra o <strong style="color:#0d3b6e;">haz clic</strong> para seleccionar
+                  <span style="font-size:14px; color:#0a4f82;">
+                    Arrastra o <strong style="color:#0a2a50;">haz clic</strong> para seleccionar
                   </span>
-                  <span style="font-size:11.5px; color:#90c4e8;">Fotos, vídeos, PDF, documentos</span>
-                  <div id="fileNames" style="font-size:12.5px; color:#168a53; margin-top:2px;"></div>
+                  <span style="font-size:12px; color:#5a9cc8;">Fotos, vídeos, PDF, documentos</span>
+                  <div id="fileNames" style="font-size:13px; color:#168a53; margin-top:2px;"></div>
                 </div>
               </div>
               <div style="margin-top:12px; display:flex; justify-content:flex-end;">
                 <button type="submit" id="uploadBtn" disabled
                         style="display:inline-flex; align-items:center; gap:6px;
-                               font-size:13.5px; padding:9px 18px;
+                               font-size:14px; padding:9px 18px;
                                background:#1a6e3c; color:#fff; border:none;
                                border-radius:8px; cursor:pointer; font-weight:600;
                                opacity:0.5; transition:opacity 0.14s;">
@@ -893,14 +894,14 @@
             <!-- Empty state -->
             <div th:if="${#lists.isEmpty(mediaList)}" class="upload-empty">
               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
-                   fill="none" stroke="#90c4e8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                   fill="none" stroke="#5a9cc8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
                    style="margin: 0 auto 10px;">
                 <rect x="3" y="3" width="18" height="18" rx="2"/>
                 <circle cx="8.5" cy="8.5" r="1.5"/>
                 <polyline points="21 15 16 10 5 21"/>
               </svg>
               Sin archivos multimedia todavía.<br>
-              <span style="font-size:11.5px; color:#b8d6ed;">Sube fotos, vídeos o documentos usando el área de arriba.</span>
+              <span style="font-size:12px; color:#8ab8d8;">Sube fotos, vídeos o documentos usando el área de arriba.</span>
             </div>
 
             <!-- Grid -->
@@ -925,7 +926,7 @@
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14 2 14 8 20 8"/>
                   </svg>
-                  <span style="font-size:11.5px; font-weight:700; color:#c62828;">PDF</span>
+                  <span style="font-size:12px; font-weight:700; color:#c62828;">PDF</span>
                 </a>
 
                 <a th:if="${m.mediaType == 'DOCUMENT'}"
@@ -935,7 +936,7 @@
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14 2 14 8 20 8"/>
                   </svg>
-                  <span style="font-size:11.5px; font-weight:700; color:#1565c0;">DOC</span>
+                  <span style="font-size:12px; font-weight:700; color:#1565c0;">DOC</span>
                 </a>
 
                 <div class="media-label" th:text="${m.originalName}">archivo.jpg</div>
@@ -985,8 +986,8 @@
                   <div>
                     <label>Código</label>
                     <input name="propertyCode" th:value="${property.propertyCode}" readonly
-                           style="background:#e8f4fd; cursor:not-allowed; color:#7aadd4; font-size:13.5px;"/>
-                    <div style="font-size:10.5px; color:#a0c4e0; margin-top:3px;">No modificable</div>
+                           style="background:#d6eaf8; cursor:not-allowed; color:#5a9cc8; font-size:14px;"/>
+                    <div style="font-size:11px; color:#8ab8d8; margin-top:3px;">No modificable</div>
                   </div>
                   <div>
                     <label>Tipo</label>
@@ -1019,7 +1020,7 @@
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
                   Descripción y notas
                 </div>
-                <div style="margin-bottom:12px;">
+                <div style="margin-bottom:14px;">
                   <label>Descripción / comentarios</label>
                   <textarea name="description" rows="4"
                             th:text="${property.description}"
@@ -1042,12 +1043,12 @@
                   <label class="check-option red">
                     <input type="checkbox" name="occupied" value="true"
                            th:checked="${property.occupied}"/>
-                    <span style="font-size:13px; font-weight:600;">Ocupado / Posible Okupa</span>
+                    <span style="font-size:14px; font-weight:600;">Ocupado / Posible Okupa</span>
                   </label>
                   <label class="check-option">
                     <input type="checkbox" name="hasAlarm" value="true"
                            id="chkHasAlarm" th:checked="${property.hasAlarm}"/>
-                    <span style="font-size:13px; font-weight:600;">Tiene alarma</span>
+                    <span style="font-size:14px; font-weight:600;">Tiene alarma</span>
                   </label>
                 </div>
 
@@ -1067,15 +1068,15 @@
               <div style="display:flex; gap:10px; justify-content:flex-end; padding-top:6px;">
                 <a th:href="@{|/inmuebles/${property.id}|}"
                    style="display:inline-flex; align-items:center; gap:6px;
-                          padding:10px 18px; font-size:13.5px; font-weight:600;
-                          border:1px solid #c8dff0; border-radius:8px;
-                          color:#1a72b8; background:#f7fbff; text-decoration:none;
+                          padding:10px 18px; font-size:14px; font-weight:600;
+                          border:1px solid #8ab8d8; border-radius:8px;
+                          color:#0a5fa0; background:#eef6fc; text-decoration:none;
                           cursor:pointer; transition:background 0.14s;">
                   Cancelar
                 </a>
                 <button type="submit"
                         style="display:inline-flex; align-items:center; gap:7px;
-                               font-size:13.5px; padding:10px 22px; font-weight:700;
+                               font-size:14px; padding:10px 22px; font-weight:700;
                                background:#1a6e3c; color:#fff; border:none;
                                border-radius:8px; cursor:pointer;
                                transition:background 0.14s;">
