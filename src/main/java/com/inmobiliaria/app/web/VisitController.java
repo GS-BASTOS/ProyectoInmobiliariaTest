@@ -125,6 +125,8 @@ public class VisitController {
                 status = InterestStatus.VERDE_PENSANDO;
             } else if ("QUIERE_VISITA".equalsIgnoreCase(nuevoEstado)) {
                 status = InterestStatus.NARANJA_QUIERE_VISITA;
+            } else if ("DESCARTAR".equalsIgnoreCase(nuevoEstado)) {
+                status = InterestStatus.ROSA_DESCARTA;
             } else {
                 status = null;
             }
