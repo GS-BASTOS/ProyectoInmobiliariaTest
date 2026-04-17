@@ -89,6 +89,7 @@
   }
   .status-pill[data-value="PENSANDO"] span.dot { background:#22c55e; }
   .status-pill[data-value="QUIERE_VISITA"] span.dot { background:#f97316; }
+  .status-pill[data-value="DESCARTAR"] span.dot { background:#f472b6; }
   .status-pill.selected {
     background:#eef2ff; border-color:#4f46e5; color:#312e81;
   }
@@ -301,7 +302,7 @@
               <button type="button" class="btn-icon" th:attr="data-id=${v.id}"
                       onclick="openEditModal(this)" title="Editar visita">
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
-                     fill="none" stroke="currentColor" stroke-width="2.3"
+                     fill="none" stroke="#000000" stroke-width="2.3"
                      stroke-linecap="round" stroke-linejoin="round">
                   <path d="M12 20h9"/>
                   <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
@@ -388,6 +389,10 @@
       <button type="button" class="status-pill" data-value="QUIERE_VISITA" onclick="selectEstado(this)">
         <span class="dot"></span>
         <span>Quiere visitar</span>
+      </button>
+      <button type="button" class="status-pill" data-value="DESCARTAR" onclick="selectEstado(this)">
+        <span class="dot"></span>
+        <span>Descartar</span>
       </button>
     </div>
     <input type="hidden" id="deleteVisitId" value=""/>
