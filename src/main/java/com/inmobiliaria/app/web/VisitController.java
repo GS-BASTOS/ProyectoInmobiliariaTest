@@ -70,6 +70,79 @@ public class VisitController {
         return "visits_done";
     }
 
+    // ── GET /visitas/{id} (obtener detalle para edición) ─────
+    @GetMapping("/visitas/{id}")
+    @ResponseBody
+    public Map<String, Object> getVisit(@PathVariable Long id) {
+        Visit visit = visitRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        Map<String, Object> dto = new LinkedHashMap<>();
+        dto.put("id", visit.getId());
+        dto.put("clientId", visit.getClient().getId());
+        dto.put("propertyId", visit.getProperty().getId());
+        dto.put("visitDate", visit.getVisitAt().toLocalDate().toString());
+        dto.put("visitTime", visit.getVisitAt().toLocalTime().toString());
+        dto.put("notes", visit.getNotes() == null ? "" : visit.getNotes());
+        return dto;
+    }
+
+    // ── POST /visitas/{id}/actualizar ────────────────────────
+    @PostMapping("/visitas/{id}/actualizar")
+    public String update(@PathVariable Long id,
+                         @RequestParam("visitDate") String visitDate,
+                         @RequestParam("visitTime") String visitTime,
+                         @RequestParam(value = "notes", required = false) String notes) {
+
+        Visit visit = visitRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        LocalDateTime dateTime = LocalDateTime.parse(visitDate + "T" + visitTime);
+        visit.setVisitAt(dateTime);
+        visit.setNotes(notes == null ? "" : notes.trim());
+        visitRepository.save(visit);
+
+        return "redirect:/visitas/programadas";
+    }
+
+    // ── POST /visitas/{id}/eliminar ──────────────────────────
+    @PostMapping("/visitas/{id}/eliminar")
+    @ResponseBody
+    public void delete(@PathVariable Long id,
+                       @RequestParam(name = "nuevoEstado", required = false) String nuevoEstado) {
+
+        Visit visit = visitRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        Long clientId = visit.getClient().getId();
+        Long propertyId = visit.getProperty().getId();
+
+        visitRepository.delete(visit);
+
+        if (nuevoEstado != null && !nuevoEstado.isBlank()) {
+            InterestStatus status;
+            if ("PENSANDO".equalsIgnoreCase(nuevoEstado)) {
+                status = InterestStatus.VERDE_PENSANDO;
+            } else if ("QUIERE_VISITA".equalsIgnoreCase(nuevoEstado)) {
+                status = InterestStatus.NARANJA_QUIERE_VISITA;
+            } else {
+                status = null;
+            }
+
+            if (status != null) {
+                interactionRepository
+                        .findByClientIdWithPropertyOrderByContactDateDesc(clientId)
+                        .stream()
+                        .filter(i -> i.getProperty().getId().equals(propertyId))
+                        .findFirst()
+                        .ifPresent(i -> {
+                            i.setStatus(status);
+                            interactionRepository.save(i);
+                        });
+            }
+        }
+    }
+
     // ── GET /visitas/clientes-por-inmueble ───────────────────
     @GetMapping("/visitas/clientes-por-inmueble")
     @ResponseBody
