@@ -32,7 +32,7 @@
     border:1px solid #e0e0e0; display:inline-block; margin-top:3px;
   }
 
-  /* ── Indicador próxima ── */
+  /* ── Indicador próxima / hoy ── */
   .row-hoy    { background:#fffde7 !important; border-left:3px solid #f5c800; }
   .row-proxima{ background:#eef1ff !important; border-left:3px solid #0b1f5c; }
 
@@ -46,6 +46,52 @@
   }
   .btn-done:hover:not(:disabled) { background:#12794a; transform:translateY(-1px); }
   .btn-done:disabled { opacity:0.6; cursor:default; transform:none; }
+
+  /* ── Btn editar / eliminar ── */
+  .btn-icon {
+    background:#fff; border:1px solid var(--line); border-radius:7px;
+    padding:6px; cursor:pointer; display:inline-flex; align-items:center;
+    justify-content:center; margin:0 2px; transition:background .15s, border-color .15s;
+  }
+  .btn-icon:hover { background:#f3f4f6; border-color:#cbd5e1; }
+
+  .visit-actions { display:flex; justify-content:center; align-items:center; gap:4px; }
+
+  /* ── Modal ── */
+  .modal-backdrop {
+    position:fixed; inset:0; background:rgba(15,23,42,.45);
+    display:none; align-items:center; justify-content:center;
+    z-index:2000; backdrop-filter:blur(2px);
+  }
+  .modal-backdrop.open { display:flex; }
+  .modal-box {
+    background:#fff; border-radius:18px; padding:24px 24px 20px;
+    width:100%; max-width:420px; box-shadow:0 18px 48px rgba(15,23,42,.25);
+    border:1px solid #e5e7eb;
+  }
+  .modal-box h3 { margin:0 0 4px; font-size:17px; font-weight:800; }
+  .modal-sub { margin:0 0 18px; font-size:13px; color:#6b7280; }
+  .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:18px; }
+  .badge-today {
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:11px; font-weight:700; color:#b45309;
+    background:#fffbeb; border-radius:999px;
+    padding:3px 9px; border:1px solid #fed7aa;
+    margin-left:4px;
+  }
+  .status-pill {
+    display:inline-flex; align-items:center; gap:6px; border-radius:999px;
+    padding:6px 10px; border:1px solid transparent; cursor:pointer;
+    font-size:12px; font-weight:600; background:#f9fafb; color:#374151;
+  }
+  .status-pill span.dot {
+    width:8px; height:8px; border-radius:50%; display:inline-block;
+  }
+  .status-pill[data-value="PENSANDO"] span.dot { background:#22c55e; }
+  .status-pill[data-value="QUIERE_VISITA"] span.dot { background:#f97316; }
+  .status-pill.selected {
+    background:#eef2ff; border-color:#4f46e5; color:#312e81;
+  }
 </style>
 <body>
 <meta name="_csrf"        th:content="${_csrf.token}"/>
@@ -166,7 +212,8 @@
       </thead>
       <tbody id="visitsBody">
         <tr th:each="v : ${visits}"
-            th:attr="data-fecha=${#temporals.format(v.visitAt,'yyyy-MM-dd')},
+            th:attr="data-id=${v.id},
+                     data-fecha=${#temporals.format(v.visitAt,'yyyy-MM-dd')},
                      data-cliente=${v.client.fullName},
                      data-inmueble=${(v.property.propertyCode != null ? v.property.propertyCode : '')
                                      + ' ' +
@@ -174,8 +221,14 @@
 
           <!-- FECHA -->
           <td style="white-space:nowrap;">
-            <div style="font-weight:700; font-size:13px;"
-                 th:text="${#temporals.format(v.visitAt,'dd/MM/yyyy')}">01/01/2026</div>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <div style="font-weight:700; font-size:13px;"
+                   th:text="${#temporals.format(v.visitAt,'dd/MM/yyyy')}">01/01/2026</div>
+              <span th:if="${#temporals.format(v.visitAt,'yyyy-MM-dd') == #temporals.format(T(java.time.LocalDate).now(),'yyyy-MM-dd')}"
+                    class="badge-today">
+                Hoy
+              </span>
+            </div>
             <div style="color:var(--muted); font-size:12px;"
                  th:text="${#temporals.format(v.visitAt,'HH:mm')}">10:00</div>
           </td>
@@ -244,17 +297,40 @@
 
           <!-- ACCIÓN -->
           <td style="text-align:center; vertical-align:middle;">
-            <button type="button"
-                    class="btn-done"
-                    th:attr="data-id=${v.id}"
-                    onclick="markDone(this)">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
-                   fill="none" stroke="currentColor" stroke-width="2.5"
-                   stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              Hecha
-            </button>
+            <div class="visit-actions">
+              <button type="button" class="btn-icon" th:attr="data-id=${v.id}"
+                      onclick="openEditModal(this)" title="Editar visita">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2.3"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20h9"/>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                </svg>
+              </button>
+              <button type="button" class="btn-icon" th:attr="data-id=${v.id}"
+                      onclick="openDeleteModal(this)" title="Eliminar visita">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                     fill="none" stroke="#dc2626" stroke-width="2.3"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14H6L5 6"/>
+                  <path d="M10 11v6"/>
+                  <path d="M14 11v6"/>
+                  <path d="M9 6V4h6v2"/>
+                </svg>
+              </button>
+              <button type="button"
+                      class="btn-done"
+                      th:attr="data-id=${v.id}"
+                      onclick="markDone(this)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Hecha
+              </button>
+            </div>
           </td>
 
         </tr>
@@ -266,6 +342,60 @@
       No hay visitas que coincidan con los filtros.
     </p>
 
+  </div>
+</div>
+
+<!-- Modal editar -->
+<div class="modal-backdrop" id="modalEdit">
+  <div class="modal-box">
+    <h3>Editar visita</h3>
+    <p class="modal-sub">Ajusta la fecha, hora o notas de la visita programada.</p>
+    <form id="editForm" method="post">
+      <input type="hidden" name="_csrf" th:value="${_csrf.token}"/>
+      <div style="display:flex; gap:10px; margin-bottom:10px;">
+        <div style="flex:1;">
+          <label>Fecha</label>
+          <input type="date" name="visitDate" id="editDate" required style="margin:0;"/>
+        </div>
+        <div style="flex:1;">
+          <label>Hora</label>
+          <input type="time" name="visitTime" id="editTime" required style="margin:0;"/>
+        </div>
+      </div>
+      <label>Notas</label>
+      <textarea name="notes" id="editNotes" rows="3" style="margin:0;"></textarea>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancelar</button>
+        <button type="submit">Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal eliminar -->
+<div class="modal-backdrop" id="modalDelete">
+  <div class="modal-box">
+    <h3>Eliminar visita</h3>
+    <p class="modal-sub">¿Seguro que quieres eliminar esta visita programada? Después puedes actualizar el estado del cliente.</p>
+    <div style="font-size:13px; margin-bottom:10px; color:#4b5563;">
+      Elige el nuevo estado del cliente:
+    </div>
+    <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+      <button type="button" class="status-pill" data-value="PENSANDO" onclick="selectEstado(this)">
+        <span class="dot"></span>
+        <span>Pensando</span>
+      </button>
+      <button type="button" class="status-pill" data-value="QUIERE_VISITA" onclick="selectEstado(this)">
+        <span class="dot"></span>
+        <span>Quiere visitar</span>
+      </button>
+    </div>
+    <input type="hidden" id="deleteVisitId" value=""/>
+    <input type="hidden" id="deleteEstado" value=""/>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Cancelar</button>
+      <button type="button" onclick="confirmDelete()" style="background:#dc2626; border-color:#dc2626;">Eliminar visita</button>
+    </div>
   </div>
 </div>
 
@@ -358,6 +488,88 @@
 
   highlightRows();
   applyFilters();
+
+  /* ── Modal edición ── */
+  const modalEdit = document.getElementById('modalEdit');
+  const editForm  = document.getElementById('editForm');
+  const editDate  = document.getElementById('editDate');
+  const editTime  = document.getElementById('editTime');
+  const editNotes = document.getElementById('editNotes');
+
+  window.openEditModal = async function (btn) {
+    const id = btn.getAttribute('data-id');
+    try {
+      const res = await fetch('/visitas/' + id);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      editDate.value  = data.visitDate;
+      editTime.value  = data.visitTime.substring(0,5);
+      editNotes.value = data.notes || '';
+      editForm.action = '/visitas/' + id + '/actualizar';
+      modalEdit.classList.add('open');
+    } catch (e) {
+      alert('Error al cargar la visita: ' + e.message);
+    }
+  };
+
+  window.closeEditModal = function () {
+    modalEdit.classList.remove('open');
+  };
+
+  modalEdit.addEventListener('click', function (e) {
+    if (e.target === modalEdit) closeEditModal();
+  });
+
+  /* ── Modal borrar + estado cliente ── */
+  const modalDelete   = document.getElementById('modalDelete');
+  const deleteVisitId = document.getElementById('deleteVisitId');
+  const deleteEstado  = document.getElementById('deleteEstado');
+
+  window.openDeleteModal = function (btn) {
+    deleteVisitId.value = btn.getAttribute('data-id');
+    deleteEstado.value  = '';
+    document.querySelectorAll('#modalDelete .status-pill').forEach(p => p.classList.remove('selected'));
+    modalDelete.classList.add('open');
+  };
+
+  window.closeDeleteModal = function () {
+    modalDelete.classList.remove('open');
+  };
+
+  modalDelete.addEventListener('click', function (e) {
+    if (e.target === modalDelete) closeDeleteModal();
+  });
+
+  window.selectEstado = function (btn) {
+    const value = btn.getAttribute('data-value');
+    deleteEstado.value = value;
+    document.querySelectorAll('#modalDelete .status-pill').forEach(p => p.classList.remove('selected'));
+    btn.classList.add('selected');
+  };
+
+  window.confirmDelete = async function () {
+    const id    = deleteVisitId.value;
+    const estado = deleteEstado.value;
+    if (!id) return;
+
+    try {
+      const params = estado ? ('?nuevoEstado=' + encodeURIComponent(estado)) : '';
+      const res = await fetch('/visitas/' + id + '/eliminar' + params, {
+        method: 'POST',
+        headers: { [csrfHeader]: csrfToken }
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const row = document.querySelector('#visitsBody tr[data-id="' + id + '"]');
+      if (row) {
+        row.style.transition = 'opacity .25s';
+        row.style.opacity = '0';
+        setTimeout(() => { row.remove(); applyFilters(); }, 260);
+      }
+      closeDeleteModal();
+    } catch (e) {
+      alert('Error al eliminar la visita: ' + e.message);
+    }
+  };
 })();
 </script>
 </body>
