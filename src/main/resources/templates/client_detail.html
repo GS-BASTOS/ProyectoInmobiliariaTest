@@ -10,9 +10,632 @@
 <nav th:replace="~{fragments :: nav}"></nav>
 
 <div class="client-layout">
-  <!-- ... contenido intacto ... -->
-  <!-- (todo el bloque HTML interno se mantiene igual que la versión anterior,
-       solo se han eliminado <style> y el <script> largo al final) -->
+
+  <!-- ══ CONTENIDO PRINCIPAL ══ -->
+  <main class="client-main">
+
+    <!-- Resumen compacto del cliente -->
+    <section class="client-summary">
+      <!-- Identidad + estado -->
+      <div class="client-summary-block summary-identity"
+           th:style="${client.posibleOcupa
+                       ? 'border-left:4px solid #b42318;'
+                       : client.noMolestar
+                         ? 'border-left:4px solid #7b1fa2;'
+                         : client.compradorFinal
+                           ? 'border-left:4px solid #168a53;'
+                           : 'border-left:4px solid var(--line);'}">
+        <div class="client-sidebar-header">
+          <div class="client-avatar" th:text="${#strings.substring(client.fullName,0,1)}">C</div>
+          <div class="client-sidebar-header-main">
+            <h1 th:text="${client.fullName}">Cliente</h1>
+            <div class="client-badges-row">
+              <span th:if="${client.compradorFinal}" class="chip chip-success">
+                💰 Comprador
+              </span>
+              <span th:if="${client.posibleOcupa}" class="chip chip-danger">
+                ⚠ Posible okupa
+              </span>
+              <span th:if="${client.noMolestar}" class="chip chip-no-contact">
+                🚫 No molestar
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información rápida -->
+      <div class="client-summary-block summary-info">
+        <div class="sidebar-section-title">Información rápida</div>
+        <div class="kv">
+          <div class="k">Tipo</div>
+          <div class="v" th:text="${client.clientType}">PARTICULAR</div>
+        </div>
+        <div class="kv" th:if="${client.companyName != null and !#strings.isEmpty(client.companyName)}">
+          <div class="k">Empresa</div>
+          <div class="v" th:text="${client.companyName}">—</div>
+        </div>
+        <div class="kv">
+          <div class="k">ID Solvia</div>
+          <div class="v" th:text="${client.solviaCode != null && !#strings.isEmpty(client.solviaCode) ? client.solviaCode : '—'}">—</div>
+        </div>
+      </div>
+
+      <!-- Contacto -->
+      <div class="client-summary-block summary-contact">
+        <div class="sidebar-section-title">Contacto</div>
+        <div class="sidebar-subtitle">Teléfonos</div>
+        <div class="sidebar-contact-list">
+          <span th:if="${#lists.isEmpty(client.phones)}" class="sidebar-empty">Sin teléfonos</span>
+          <a th:each="p : ${client.phones}" class="wa-link"
+             th:style="${client.noMolestar} ? 'opacity:0.4; text-decoration:line-through; pointer-events:none;' : ''"
+             th:href="${'https://wa.me/' + #strings.replace(#strings.replace(p.phoneNumber, '+', ''), ' ', '')}"
+             target="_blank"
+             th:text="${p.phoneNumber}">600000000</a>
+        </div>
+        <div class="sidebar-subtitle">Emails</div>
+        <div class="sidebar-contact-list">
+          <span th:if="${#lists.isEmpty(client.emails)}" class="sidebar-empty">Sin emails</span>
+          <span th:each="e,st : ${client.emails}"
+                th:style="${client.noMolestar} ? 'opacity:0.4; text-decoration:line-through;' : ''"
+                th:text="${e.email} + ${!st.last ? ', ' : ''}">mail@mail.com</span>
+        </div>
+      </div>
+
+      <!-- Notas generales -->
+      <div class="client-summary-block summary-notes" th:if="${!client.posibleOcupa}">
+        <div class="sidebar-section-title">Notas generales</div>
+        <p class="sidebar-notes"
+           th:text="${client.generalNotes != null && !#strings.isEmpty(client.generalNotes) ? client.generalNotes : 'Sin notas adicionales para este cliente.'}">
+          Sin notas adicionales para este cliente.
+        </p>
+      </div>
+    </section>
+
+    <!-- Banners de estado / contexto -->
+    <section class="client-banner-stack">
+      <div th:if="${client.posibleOcupa && client.generalNotes != null && !#strings.isEmpty(client.generalNotes)}"
+           class="client-banner client-banner-danger">
+        <strong>⚠ Nota:</strong>
+        <span th:text="${client.generalNotes}"></span>
+      </div>
+
+      <div th:if="${client.noMolestar}"
+           class="client-banner client-banner-no-contact">
+        <strong>🚫 No molestar:</strong> Este cliente no quiere recibir llamadas ni emails.
+      </div>
+
+      <div th:if="${motivoContacto != null && !#strings.isEmpty(motivoContacto)}"
+           class="client-banner client-banner-info">
+        <strong>⭐ ¿Qué busca?</strong>
+        <span th:text="${motivoContacto}" style="margin-left:6px;"></span>
+      </div>
+
+      <div th:if="${client.compradorFinal}"
+           class="client-banner client-banner-success">
+        <strong>💰 Comprador confirmado.</strong> Las interacciones y el formulario de nueva
+        interacción están desactivados.
+      </div>
+    </section>
+
+    <!-- ══ NAV DE SECCIONES (TABS) ══ -->
+    <div class="client-tabs" role="tablist">
+      <button type="button" class="client-tab active" data-target="#tab-interacciones">Interacciones</button>
+      <button type="button" class="client-tab" data-target="#tab-nueva">Nueva interacción</button>
+      <button type="button" class="client-tab" data-target="#tab-editar">Editar cliente</button>
+    </div>
+
+    <!-- ══ PANEL INTERACCIONES ══ -->
+    <section class="client-panel client-tab-panel active" id="tab-interacciones">
+      <header class="client-panel-header">
+        <div>
+          <h2>Interacciones</h2>
+          <div class="small">Histórico de contacto del cliente con los inmuebles.</div>
+        </div>
+      </header>
+
+      <div class="panel-divider"></div>
+
+      <p th:if="${#lists.isEmpty(interactions)}" class="panel-empty">
+        Aún no hay interacciones registradas.
+      </p>
+
+      <div th:if="${!#lists.isEmpty(interactions)}" class="client-table-wrap">
+        <table class="tabla-interacciones wide">
+          <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Inmueble</th>
+            <th style="text-align:center;">NDA</th>
+            <th>Ticket</th>
+            <th>Canal</th>
+            <th>Estado</th>
+            <th style="min-width:260px;">Comentarios</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="it : ${interactions}"
+              th:style="${client.compradorFinal && it.property.sold
+                          ? 'background:#e8f5e9; border-left:3px solid #168a53;'
+                          : client.compradorFinal
+                            ? 'opacity:0.35; pointer-events:none;'
+                            : client.posibleOcupa
+                              ? 'background:#fff8f8;'
+                              : ''}">
+
+            <!-- FECHA -->
+            <td style="white-space:nowrap; color:var(--muted); font-size:12px;"
+                th:text="${#temporals.format(it.contactDate, 'dd/MM/yyyy')}">13/02/2026</td>
+
+            <!-- INMUEBLE -->
+            <td>
+              <a th:href="@{|/inmuebles/${it.property.id}|}"
+                 th:text="${it.property.propertyCode}"
+                 class="link-strong">INM-001</a>
+              <div class="small"
+                   th:if="${it.property.propertyType != null && !#strings.isEmpty(it.property.propertyType)}"
+                   th:text="${it.property.propertyType}">Tipo</div>
+              <div class="small"
+                   th:if="${it.property.address != null && !#strings.isEmpty(it.property.address)}"
+                   th:text="${it.property.address}">Dirección</div>
+              <div class="small"
+                   th:if="${it.property.municipality != null && !#strings.isEmpty(it.property.municipality)}"
+                   style="display:flex; align-items:center; gap:4px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24"
+                     fill="none" stroke="var(--muted)" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <span th:text="${it.property.municipality}">Madrid</span>
+              </div>
+              <a th:if="${it.property.sold}"
+                 th:href="${it.property.soldClient != null
+                            ? '/clientes/' + it.property.soldClient.id
+                            : '/clientes/' + it.client.id}"
+                 class="chip chip-success chip-inline">
+                💰 Comprado
+                <span th:if="${it.property.soldClient != null}"
+                      th:text="${' · ' + it.property.soldClient.fullName}"></span>
+              </a>
+              <a th:if="${!it.property.sold && it.property.preVendido}"
+                 th:href="${it.property.preVendidoClient != null
+                            ? '/clientes/' + it.property.preVendidoClient.id : '#'}"
+                 class="chip chip-warning chip-inline">
+                ⏳ Pre vendido
+                <span th:if="${it.property.preVendidoClient != null}"
+                      th:text="${' · ' + it.property.preVendidoClient.fullName}"></span>
+              </a>
+            </td>
+
+            <!-- NDA -->
+            <td style="text-align:center; vertical-align:middle;">
+              <input type="checkbox" class="nda-toggle"
+                     th:attr="data-client-id=${client.id},data-interaction-id=${it.id}"
+                     th:checked="${it.ndaRequested}"
+                     style="accent-color:#168a53; width:16px; height:16px; cursor:pointer;"/>
+            </td>
+
+            <!-- TICKET -->
+            <td style="min-width:180px;">
+              <input type="text" class="ticket-input"
+                     th:attr="data-client-id=${client.id},data-interaction-id=${it.id}"
+                     th:value="${it.ticketCode}"
+                     placeholder="Código ticket..."/>
+              <div class="ticket-row">
+                <button type="button" class="ticket-save"
+                        th:attr="data-client-id=${client.id},data-interaction-id=${it.id}">
+                  Guardar
+                </button>
+                <span class="ticket-feedback small">✓</span>
+              </div>
+            </td>
+
+            <!-- CANAL -->
+            <td>
+              <span class="tag tag-muted" th:text="${it.channel}">-</span>
+            </td>
+
+            <!-- ESTADO -->
+            <td>
+              <select class="status-select"
+                      th:attr="data-client-id=${client.id},data-interaction-id=${it.id}">
+                <option th:each="s : ${statuses}"
+                        th:value="${s}" th:text="${s}"
+                        th:selected="${s == it.status}"></option>
+              </select>
+              <span class="badge">
+                <span class="dot status-dot" th:attr="data-status=${it.status}"></span>
+              </span>
+            </td>
+
+            <!-- COMENTARIOS -->
+            <td class="comments-cell">
+              <span th:if="${it.comments == null || #strings.isEmpty(it.comments)}"
+                    class="comment-display comment-empty"
+                    th:attr="data-iid=${it.id}, data-cid=${client.id}"
+                    onclick="openCommentModal(this)">
+                — <span>(editar)</span>
+              </span>
+              <span th:if="${it.comments != null && !#strings.isEmpty(it.comments)}"
+                    class="comment-display comment-filled"
+                    th:attr="data-iid=${it.id}, data-cid=${client.id}"
+                    th:utext="${it.comments}"
+                    onclick="openCommentModal(this)">
+              </span>
+            </td>
+
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div th:if="${client.compradorFinal}"
+           class="client-banner client-banner-success" style="margin-top:14px;">
+        <strong>💰 COMPRADOR:</strong> Las interacciones anteriores están desactivadas.
+      </div>
+    </section>
+
+    <!-- ══ PANEL NUEVA INTERACCIÓN ══ -->
+    <section class="client-panel client-tab-panel" id="tab-nueva"
+             th:style="${client.compradorFinal ? 'opacity:0.4; pointer-events:none;' : ''}">
+      <header class="client-panel-header">
+        <div>
+          <h2>Nueva interacción</h2>
+          <div class="small" th:if="${!client.compradorFinal}">
+            Añadir un nuevo contacto del cliente con un inmueble.
+          </div>
+          <div class="small" th:if="${client.compradorFinal}" style="color:#168a53;">
+            Este cliente ya ha comprado un inmueble.
+          </div>
+        </div>
+      </header>
+
+      <div class="panel-divider"></div>
+
+      <form th:action="@{|/clientes/${client.id}/interacciones|}"
+            th:object="${newInteraction}" method="post" class="panel-form">
+
+        <div class="section-block">
+          <div class="section-block-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                 fill="none" stroke="var(--muted)" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8"  y1="2" x2="8"  y2="6"/>
+              <line x1="3"  y1="10" x2="21" y2="10"/>
+            </svg>
+            Datos del contacto
+          </div>
+          <div class="grid-3">
+            <div><label>Fecha</label><input type="date" th:field="*{contactDate}"/></div>
+            <div>
+              <label>Canal</label>
+              <select th:field="*{channel}">
+                <option th:each="c : ${channels}" th:value="${c}" th:text="${c}"></option>
+              </select>
+            </div>
+            <div>
+              <label>Estado</label>
+              <select th:field="*{status}">
+                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-block-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                 fill="none" stroke="var(--muted)" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            Inmueble
+          </div>
+
+          <label class="field-label-strong">Seleccionar del catálogo</label>
+          <div class="small" style="margin-bottom:8px; color:var(--muted);">
+            Disponibles y pre vendidos. Escribe o haz clic para buscar.
+          </div>
+          <div class="combo-wrapper" id="niComboWrapper">
+            <input type="text" id="niComboInput" class="combo-input"
+                   placeholder="🔍  Buscar por Macro, municipio, tipo..."
+                   autocomplete="off" readonly/>
+            <div class="combo-dropdown" id="niComboDropdown"></div>
+          </div>
+          <div id="niComboChip" class="combo-chip">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                 fill="none" stroke="#2e7d32" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span id="niComboChipLabel"></span>
+            <span id="niComboClearBtn" class="combo-chip-clear" title="Limpiar selección">×</span>
+          </div>
+
+          <div class="grid-3 combo-extra-grid">
+            <div>
+              <label>ID Solvia</label>
+              <input th:field="*{solviaCode}" placeholder="Ej: SOLVIA-123"/>
+            </div>
+            <div>
+              <label>Teléfono</label>
+              <input th:field="*{phone}" readonly/>
+            </div>
+            <div>
+              <label>Email</label>
+              <input th:field="*{email}" readonly/>
+            </div>
+          </div>
+          <div class="grid-3 combo-extra-grid">
+            <div>
+              <label>Municipio</label>
+              <input th:field="*{municipality}" id="niMunicipality" placeholder="Ej: Madrid"/>
+            </div>
+            <div>
+              <label>Tipo inmueble</label>
+              <input th:field="*{propertyType}" id="niPropertyType" placeholder="Ej: Piso"/>
+            </div>
+            <div>
+              <label>Macro Inmueble</label>
+              <input th:field="*{propertyCode}" id="niPropertyCode" placeholder="Ej: 1234"/>
+            </div>
+          </div>
+          <div class="grid combo-extra-grid">
+            <div>
+              <label>Dirección</label>
+              <input th:field="*{address}" id="niAddress" placeholder="Ej: Calle ..."/>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-field-block">
+          <label>Comentarios</label>
+          <textarea th:field="*{comments}" rows="3"
+                    placeholder="Observaciones sobre esta interacción..."></textarea>
+        </div>
+
+        <div class="panel-actions">
+          <button type="submit" class="btn-primary">
+            <span>Guardar interacción</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ══ PANEL EDITAR CLIENTE ══ -->
+    <section class="client-panel client-tab-panel" id="tab-editar">
+      <header class="client-panel-header">
+        <div>
+          <h2>Editar cliente</h2>
+          <div class="small">Modificar los datos del cliente.</div>
+        </div>
+      </header>
+
+      <div class="panel-divider"></div>
+
+      <form th:action="@{|/clientes/${client.id}/editar|}"
+            th:object="${form}" method="post" class="panel-form">
+        <input type="hidden" th:field="*{id}"/>
+
+        <div class="section-block">
+          <div class="section-block-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                 fill="none" stroke="var(--muted)" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Identidad
+          </div>
+          <div class="grid">
+            <div>
+              <label>Tipo</label>
+              <select th:field="*{clientType}">
+                <option th:each="t : ${clientTypes}" th:value="${t}" th:text="${t}"></option>
+              </select>
+            </div>
+            <div><label>Nombre</label><input th:field="*{fullName}"/></div>
+          </div>
+          <div class="grid" style="margin-top:12px;">
+            <div>
+              <label>Empresa <span class="muted-hint">(opcional)</span></label>
+              <input th:field="*{companyName}" placeholder="Nombre de la empresa..."/>
+            </div>
+            <div><label>ID Solvia</label><input th:field="*{solviaCode}" placeholder="Ej: SOLVIA-123"/></div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-block-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                 fill="none" stroke="var(--muted)" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+            Teléfonos y emails
+          </div>
+          <div class="grid-3">
+            <div>
+              <label>Teléfono 1</label><input th:field="*{phone1}"/>
+              <div class="field-error" th:if="${#fields.hasErrors('phone1')}" th:errors="*{phone1}"></div>
+            </div>
+            <div>
+              <label>Teléfono 2</label><input th:field="*{phone2}"/>
+              <div class="field-error" th:if="${#fields.hasErrors('phone2')}" th:errors="*{phone2}"></div>
+            </div>
+            <div>
+              <label>Teléfono 3</label><input th:field="*{phone3}"/>
+              <div class="field-error" th:if="${#fields.hasErrors('phone3')}" th:errors="*{phone3}"></div>
+            </div>
+          </div>
+          <div class="grid" style="margin-top:12px;">
+            <div><label>Email 1</label><input th:field="*{email1}"/></div>
+            <div><label>Email 2</label><input th:field="*{email2}"/></div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-block-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                 fill="none" stroke="var(--muted)" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <line x1="8" y1="6" x2="21" y2="6"/>
+              <line x1="8" y1="12" x2="21" y2="12"/>
+              <line x1="8" y1="18" x2="21" y2="18"/>
+              <line x1="3" y1="6" x2="3.01" y2="6"/>
+              <line x1="3" y1="12" x2="3.01" y2="12"/>
+              <line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+            Notas y motivo
+          </div>
+          <div><label>Notas generales</label><textarea th:field="*{generalNotes}" rows="3"></textarea></div>
+          <div style="margin-top:12px;">
+            <label>¿Qué busca? / Motivo de contacto</label>
+            <textarea th:field="*{motivoContacto}" rows="3"
+                      placeholder="Ej: Busca piso de 3 habitaciones en Madrid, presupuesto 200k..."></textarea>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-block-title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                 fill="none" stroke="var(--muted)" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            Clasificación especial
+          </div>
+          <div class="special-flags">
+            <label class="special-flag">
+              <input type="checkbox" th:field="*{posibleOcupa}" id="chkPosibleOcupa"/>
+              <span class="special-flag-label special-flag-danger">⚠ Posible okupa</span>
+            </label>
+
+            <label class="special-flag">
+              <input type="checkbox" th:field="*{preVenda}" id="chkPreVenda"/>
+              <span class="special-flag-label special-flag-warning">⏳ Pre venda</span>
+            </label>
+
+            <label class="special-flag">
+              <input type="checkbox" th:field="*{compradorFinal}" id="chkCompradorFinal"/>
+              <span class="special-flag-label special-flag-success">💰 Comprador</span>
+            </label>
+
+            <label class="special-flag">
+              <input type="checkbox" th:field="*{noMolestar}" style="accent-color:#7b1fa2;"/>
+              <span class="special-flag-label special-flag-no-contact">🚫 No molestar</span>
+            </label>
+          </div>
+
+          <!-- Panel Pre Venda -->
+          <div id="panelPreVenda"
+               th:style="${form.preVenda} ? 'display:block;' : 'display:none;'"
+               class="special-panel special-panel-warning">
+            <label class="special-panel-title">
+              🏠 ¿Qué inmueble(s) marcar como Pre Vendido?
+              <span class="small">(puedes marcar varios)</span>
+            </label>
+            <div class="small" style="margin-bottom:10px; color:#555;">
+              Los inmuebles seleccionados se marcarán como
+              <strong style="color:#e07a18;">⏳ pre vendido</strong> en el catálogo.
+            </div>
+            <div class="special-panel-list">
+              <label th:each="it : ${interactions}" class="special-panel-item special-panel-item-warning">
+                <input type="checkbox" name="preVendaPropertyIds"
+                       th:value="${it.property.id}"
+                       th:checked="${form.preVendaPropertyIds != null && form.preVendaPropertyIds.contains(it.property.id)}"/>
+                <span>
+                  <strong th:text="${it.property.propertyCode}">COD</strong>
+                  <span th:if="${it.property.propertyType != null}"
+                        th:text="${' · ' + it.property.propertyType}"></span>
+                  <span th:if="${it.property.municipality != null}"
+                        th:text="${' · ' + it.property.municipality}"></span>
+                  <span th:if="${it.property.preVendido}"
+                        class="special-pill-warning">⏳ ya pre vendido</span>
+                  <span th:if="${it.property.sold}"
+                        class="special-pill-success">✓ ya comprado</span>
+                </span>
+              </label>
+            </div>
+            <div class="small" style="margin-top:8px; color:#888;">
+              Si el inmueble ya está vendido no se modificará.
+            </div>
+          </div>
+
+          <!-- Panel Comprador -->
+          <div id="panelInmuebleComprado"
+               th:style="${form.compradorFinal} ? 'display:block;' : 'display:none;'"
+               class="special-panel special-panel-success">
+            <label class="special-panel-title">
+              🏠 ¿Qué inmueble(s) compró?
+              <span class="small">(puedes marcar varios)</span>
+            </label>
+            <div class="small" style="margin-bottom:10px; color:#555;">
+              Los inmuebles seleccionados se marcarán como <strong>vendido</strong>.
+              El resto de interacciones pasarán a
+              <strong style="color:#b02cff;">DESCARTA</strong>.
+            </div>
+            <div class="special-panel-list">
+              <label th:each="it : ${interactions}" class="special-panel-item special-panel-item-success">
+                <input type="checkbox" name="purchasedPropertyIds"
+                       th:value="${it.property.id}"
+                       th:checked="${form.purchasedPropertyIds != null && form.purchasedPropertyIds.contains(it.property.id)}"/>
+                <span>
+                  <strong th:text="${it.property.propertyCode}">COD</strong>
+                  <span th:if="${it.property.propertyType != null}"
+                        th:text="${' · ' + it.property.propertyType}"></span>
+                  <span th:if="${it.property.municipality != null}"
+                        th:text="${' · ' + it.property.municipality}"></span>
+                  <span th:if="${it.property.sold}"
+                        class="special-pill-success">✓ ya comprado</span>
+                </span>
+              </label>
+            </div>
+            <div class="small" style="margin-top:8px; color:#888;">
+              Si el inmueble ya está marcado como vendido no cambiará nada.
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-actions panel-actions-right">
+          <a class="btn btn-secondary" th:href="@{|/clientes/${client.id}|}">Cancelar</a>
+          <button type="submit" class="btn-primary">
+            <span>Guardar cambios</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+  </main>
+</div>
+
+<!-- ══ MODAL COMENTARIOS ══ -->
+<div class="comment-modal-backdrop" id="commentModalBackdrop">
+  <div class="comment-modal-box">
+    <h3>✏️ Editar comentario</h3>
+    <p class="hint-text" style="margin:0 0 14px;">
+      Selecciona texto y pulsa <strong>🔴</strong> para marcarlo en rojo.
+      Usa <kbd>Ctrl+Enter</kbd> o <kbd>Alt+Enter</kbd> para saltar de línea.
+    </p>
+    <div class="comment-editor-toolbar">
+      <button type="button" class="toolbar-btn" id="btnHighlight" title="Marcar en rojo (Ctrl+H)">🔴</button>
+      <button type="button" class="toolbar-btn" id="btnClearMark" title="Quitar marcado">✕</button>
+      <div class="toolbar-sep"></div>
+      <button type="button" class="toolbar-btn" id="btnClearAll"
+              style="font-size:11px; width:auto; padding:0 8px;">Limpiar todo</button>
+    </div>
+    <div id="commentEditor" class="comment-editor-body" contenteditable="true" spellcheck="true"></div>
+    <div class="comment-modal-actions">
+      <button type="button" id="btnCancelComment"
+              style="background:#fff; color:#111; border:1px solid var(--line);">Cancelar</button>
+      <button type="button" id="btnSaveComment"
+              style="background:#0b1f5c; border-color:#0b1f5c;">Guardar</button>
+    </div>
+  </div>
 </div>
 
 <!-- Catálogo para el combobox -->
@@ -23,5 +646,6 @@
 </script>
 
 <script src="/js/client_detail.js" defer></script>
+
 </body>
 </html>
